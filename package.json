@@ -1,0 +1,30 @@
+{
+  "name": "botcore",
+  "version": "0.1.0-alpha",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "types": "types/",
+  "scripts": {
+    "bot": "node index.js"
+  },
+  "author": "HACKERPRO17",
+  "license": "ISC",
+  "dependencies": {
+    "adm-zip": "^0.5.9",
+    "axios": "^0.27.2",
+    "colors": "^1.4.0",
+    "discord.js": "^13.6.0",
+    "glob": "^8.0.3",
+    "i18n": "^0.15.0",
+    "moment": "^2.29.3",
+    "progress": "^2.0.3",
+    "semver": "^7.3.7",
+    "sha256-file": "^1.0.0",
+    "splitargs": "^0.0.7",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/semver": "^7.3.7"
+  }
+}
