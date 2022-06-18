@@ -51,7 +51,7 @@ export const install = async function (name, version = 'latest', chainUpdate = f
 
         setPackageMetadata(name, currentManifest);
 
-        if ((resolvedCurrent !== null) && version === 'latest') {
+        if ((resolvedCurrent !== null) && version === 'latest' && packageState.getStatus() === STATUS_INSTALLED) {
             if (semver.eq(resolvedCurrent, resolvedRequired)) {
                 throw new PackageNewestVersionInstalled(`Newest version of ${name} already installed`);
             }

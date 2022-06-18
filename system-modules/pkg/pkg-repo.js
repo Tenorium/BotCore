@@ -1,6 +1,7 @@
 import axios from "axios";
 import {getSources} from "./pkg-util.js";
 import {VersionOfPackageNotFound} from "./error/VersionOfPackageNotFound.js";
+import {arrayIncludesAll} from "../../utils.js";
 import semver from "semver";
 import {install} from "./npm-util.js";
 import * as core from "./pkg-core.js";

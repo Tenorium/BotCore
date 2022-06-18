@@ -201,6 +201,39 @@ const getPath = function (datatype) {
     return new URL(`data/${datatype}.json`, import.meta.url).pathname;
 }
 
+export const createDefaultData = function () {
+    !fs.existsSync('data/metadata.json') && fs.writeFileSync('data/metadata.json', '{}');
+    !fs.existsSync('data/sources.json') && fs.writeFileSync('data/sources.json', JSON.stringify(
+        [
+            {
+                "url": "https://tenorium.net/repo/",
+                "branches": ["general", "experimental"],
+                "active-branches": ["general"]
+            }
+        ]
+    ));
+    !fs.existsSync('data/state.json') && fs.writeFileSync('data/state.json', JSON.stringify(
+        {
+            "core": {
+                "status": "installed",
+                "oldVersion": null,
+                "version": "0.1.0"
+            },
+            "cli": {
+                "status": "installed",
+                "oldVersion": null,
+                "version": "0.1.0"
+            },
+            "pkg": {
+                "status": "installed",
+                "oldVersion": null,
+                "version": "0.1.0"
+            }
+        }
+    ));
+    !fs.existsSync('data/lock.json') && fs.writeFileSync('data/lock.json', JSON.stringify({lock: false}));
+}
+
 export class LockedError extends Error {
     constructor() {
         super('LockedError');

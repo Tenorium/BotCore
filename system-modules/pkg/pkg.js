@@ -5,6 +5,7 @@ import {Worker} from "worker_threads";
 import {workerData} from "node:worker_threads";
 import {getPkgPath} from "./pkg-util.js";
 import {listInstalledPackages} from "./pkg-core.js";
+import path from "path";
 
 /**
  *

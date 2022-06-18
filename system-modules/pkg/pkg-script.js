@@ -1,6 +1,7 @@
 import {getPkgPath} from "./pkg-util.js";
 import * as fs from "fs";
 import * as path from "path";
+import globSync from "glob/sync.js";
 
 /**
  *
