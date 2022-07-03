@@ -89,6 +89,8 @@ export default class CommandManager {
         if (!this.isDisabled(commandName)) {
             disabledCommands.push(commandName);
         }
+
+        this.getEventManager().emit('commandDisabled', commandName);
     }
 
     /**
@@ -104,6 +106,8 @@ export default class CommandManager {
                 disabledCommands.splice(index, 1);
             }
         }
+
+        this.getEventManager().emit('commandEnabled', commandName);
     }
 
     /**
