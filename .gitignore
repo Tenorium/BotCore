@@ -1,4 +1,5 @@
 /node_modules/
 /config/core.config.js
 /modules/*
+!/modules/.gitkeep
 .idea/
