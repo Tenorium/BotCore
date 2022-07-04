@@ -1,4 +1,5 @@
 import Core from "./core/core.js";
+import config from "./config/core.config.js";
 import colors from "colors";
 import i18n from "i18n";
 import {dirname} from "path";
@@ -13,13 +14,13 @@ global.basePath = dirname(new URL('', import.meta.url).pathname);
  *
  * @type {Config}
  */
-let config = {
+let updaterConfig = {
     repository: "https://github.com/Tenorium/BotCore",
     branch: "master",
     tempLocation: path.join(os.tmpdir(), 'botcore')
 };
 
-let updater = new AutoGitUpdate(config);
+let updater = new AutoGitUpdate(updaterConfig);
 
 await updater.autoUpdate();
 
