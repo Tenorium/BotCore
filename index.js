@@ -61,7 +61,8 @@ let config = JSON.parse(fs.readFileSync(configPath));
 let updaterConfig = {
     repository: "https://github.com/Tenorium/BotCore",
     branch: "master",
-    tempLocation: path.join(os.tmpdir(), 'botcore')
+    tempLocation: path.join(os.tmpdir(), 'botcore'),
+    executeOnComplete: "git submodule update --init"
 };
 
 let updater = new AutoGitUpdate(updaterConfig);
