@@ -41,6 +41,10 @@ if (!fs.existsSync(configPath)) {
     let token = await question("Enter bot token: ");
     let prefix = await question("Enter prefix(default \"//\"): ");
 
+    if (prefix.length === 0) {
+        prefix = "//";
+    }
+
     defaultConfig = {
         ...defaultConfig,
         locale,
