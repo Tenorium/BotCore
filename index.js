@@ -8,6 +8,7 @@ import os from "os";
 import AutoGitUpdate from "auto-git-update";
 import * as fs from "fs";
 import readline from "readline";
+import * as util from "util";
 
 global.basePath = dirname(new URL('', import.meta.url).pathname);
 
@@ -30,14 +31,15 @@ if (!fs.existsSync(configPath)) {
     }
 
     let rl = readline.createInterface(process.stdin, process.stdout);
+    const question = util.promisify(rl.question).bind(rl);
 
-    let locale = await rl.question("Select language(default \"en\", available \"en\", \"ru\"): ");
+    let locale = await question("Select language(default \"en\", available \"en\", \"ru\"): ");
     if (!['en', 'ru'].includes(locale)) {
         locale = 'en';
     }
 
-    let token = await rl.question("Enter bot token: ");
-    let prefix = await rl.question("Enter prefix(default \"//\"): ");
+    let token = await question("Enter bot token: ");
+    let prefix = await question("Enter prefix(default \"//\"): ");
 
     defaultConfig = {
         ...defaultConfig,
