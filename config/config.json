@@ -1,0 +1,14 @@
+{
+  "logger": {
+    "debug": false,
+    "dateFormat": "DD.MM.YYYY HH:mm:ss"
+  },
+  "client": {
+    "intents": [
+      32767
+    ]
+  },
+  "locale": "en",
+  "token": "OTcyMTU1MzMxMzEwMzg3MjAw.YnU8NA.aQRKqrx4Fx_wzKyc2QsV4Dmb6p8",
+  "prefix": "//"
+}
