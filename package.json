@@ -1,6 +1,6 @@
 {
   "name": "botcore",
-  "version": "0.1.0-alpha",
+  "version": "0.1.1-alpha",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -11,6 +11,7 @@
   "author": "HACKERPRO17",
   "license": "ISC",
   "dependencies": {
+    "@types/sequelize": "^4.28.14",
     "adm-zip": "^0.5.9",
     "auto-git-update": "^1.1.1",
     "axios": "^0.27.2",
@@ -21,8 +22,10 @@
     "moment": "^2.29.3",
     "progress": "^2.0.3",
     "semver": "^7.3.7",
+    "sequelize": "^6.21.2",
     "sha256-file": "^1.0.0",
     "splitargs": "^0.0.7",
+    "sqlite3": "^5.0.8",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

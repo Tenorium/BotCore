@@ -21,9 +21,9 @@ export default class CommandManager {
      * @throws CommandAlreadyRegisteredError
      */
     static registerCommand(commandName, handler) {
-        if (!this.#commands.hasOwnProperty(commandName)) {
+        if (!CommandManager.#commands.hasOwnProperty(commandName)) {
             let uuid = Core.getCore().registerClientEvent('messageCreate', this.#getWrapper(handler, commandName))
-            this.#commands[commandName] = {handler, uuid};
+            CommandManager.#commands[commandName] = {handler, uuid};
 
             this.getEventManager().emit('commandRegistered', commandName);
             return;
@@ -39,9 +39,9 @@ export default class CommandManager {
      * @throws CommandNotExist
      */
     static unregisterCommand(commandName) {
-        if (this.#commands.hasOwnProperty(commandName)) {
-            Core.getCore().unregisterClientEvent(this.#commands[commandName].uuid);
-            delete this.#commands[commandName];
+        if (CommandManager.#commands.hasOwnProperty(commandName)) {
+            Core.getCore().unregisterClientEvent(CommandManager.#commands [commandName].uuid);
+            delete CommandManager.#commands[commandName];
             return;
         }
 
@@ -53,7 +53,7 @@ export default class CommandManager {
      * @return {string[]}
      */
     static listCommands() {
-        return Object.keys(this.#commands).map(key => key);
+        return Object.keys(CommandManager.#commands).map(key => key);
     }
 
     /**
@@ -62,7 +62,7 @@ export default class CommandManager {
      * @return {*}
      */
     static hasCommand(commandName) {
-        return this.#commands.includes(commandName);
+        return Object.keys(CommandManager.#commands).includes(commandName);
     }
 
     /**
@@ -126,12 +126,12 @@ export default class CommandManager {
      */
     static #getWrapper(handler, command) {
         return function (message) {
-            let prefix = Core.getCore().getConfig();
+            let prefix = Core.getCore().getConfig()['prefix'];
             if (
                 !(message.content.startsWith(prefix)
                     || MessageMentions.USERS_PATTERN.test(message.content))
             ) {
-                return
+                return;
             }
 
             let prefix_;
