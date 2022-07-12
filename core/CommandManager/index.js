@@ -153,7 +153,7 @@ export default class CommandManager {
             }
 
             try {
-                handler(args(message.content.replace(`${prefix_ + command} `, '')), message);
+                handler(args(message.content.replace(`${prefix_ + command}`, '').trim()), message);
             } catch (e) {
                 errorCommandHandler(command, message, e);
             }
@@ -164,7 +164,7 @@ export default class CommandManager {
 /**
  * @typedef CommandHandlerFunc
  * @type function
- * @param {string} args
+ * @param {string[]} args
  * @param {Message} message
  *
  */
