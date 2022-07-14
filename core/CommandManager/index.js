@@ -5,7 +5,6 @@ import Logger from "../log.js";
 import CommandAlreadyRegisteredError from "./error/CommandAlreadyRegisteredError.js";
 import CommandNotExist from "./error/CommandNotExist.js";
 import CommandEventEmitter from "./event.js";
-import i18n from "i18n";
 
 const disabledCommands = [];
 
@@ -185,8 +184,8 @@ const disabledCommandHandler = function (command, message) {
                     iconURL: client.user.avatarURL()
                 },
                 color: "GOLD",
-                title: i18n.__('command_manager_unhandled_disabled_title'),
-                description: i18n.__('command_manager_unhandled_disabled_description', {command})`⚠ К сожалению комманда **${command}** выключена!`
+                title: i18n.t('commandManager:disabled_title'),
+                description: i18n.t('commandManager:disabled_description', {command})
             }
         ]
     });
@@ -209,8 +208,8 @@ const errorCommandHandler = function (command, message, e) {
                     iconURL: client.user.avatarURL()
                 },
                 color: "RED",
-                title: i18n.__('command_manager_unhandled_error_title'),
-                description: i18n.__('command_manager_unhandled_error_description', {command})
+                title: i18n.t('commandManager:error_description'),
+                description: i18n.t('commandManager:error_description', {command})
             }
         ]
     });

@@ -1,0 +1,6 @@
+{
+  "error_description": "❗ An unhandled error occurred while executing the **{{command}}** command!",
+  "error_title": "Error!",
+  "disabled_description": "⚠ Unfortunately the **{{command}}** command is disabled!",
+  "disabled_title": "Command disabled!"
+}
