@@ -76,7 +76,6 @@ await i18next
                 let globResult = globSync(`*(system-modules|modules)/**/locales/${language}/${namespace}.json`)
                     .concat(globSync(`locales/${language}/${namespace}.json`));
 
-                console.log(globResult, {language, namespace});
                 return globResult[0];
             }
         }
