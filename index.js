@@ -9,12 +9,13 @@ import AutoGitUpdate from "auto-git-update";
 import * as fs from "fs";
 import readline from "readline";
 import * as util from "util";
+import ConfigManager from "./core/ConfigManager/index.js";
 
 global.basePath = dirname(new URL('', import.meta.url).pathname);
 
-let configPath = path.join(basePath, 'config/config.json');
+let config = ConfigManager.readConfig('core');
 
-if (!fs.existsSync(configPath)) {
+if (config === null) {
     console.log("Config not exist.");
     console.log("Starting configuration wizard...");
 
@@ -53,12 +54,11 @@ if (!fs.existsSync(configPath)) {
     }
 
     rl.close();
-    fs.writeFileSync(configPath, JSON.stringify(defaultConfig));
+    ConfigManager.writeConfig('core', undefined, defaultConfig);
 
-    console.log("Config saved to config/config.json.")
+    console.log("Config saved.");
+    config = ConfigManager.readConfig('core');
 }
-
-let config = JSON.parse(fs.readFileSync(configPath));
 
 /**
  *
