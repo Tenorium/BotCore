@@ -9,6 +9,9 @@ import AutoGitUpdate from "auto-git-update";
 import * as fs from "fs";
 import readline from "readline";
 import * as util from "util";
+import i18next from "i18next";
+import Backend from "i18next-fs-backend";
+import globSync from "glob/sync.js";
 import ConfigManager from "./core/ConfigManager/index.js";
 
 global.basePath = dirname(new URL('', import.meta.url).pathname);
@@ -59,6 +62,27 @@ if (config === null) {
     console.log("Config saved.");
     config = ConfigManager.readConfig('core');
 }
+
+let translationsGlob = globSync('*(system-modules|modules)/**/locales/**/*.json').concat(globSync('locales/**/*.json'));
+
+
+await i18next
+    .use(Backend)
+    .init({
+        lng: config.locale,
+        fallbackLng: 'en',
+        ns: Array.from(new Set(translationsGlob.map(value => path.basename(value, '.json')))),
+        backend: {
+            loadPath: function (language, namespace) {
+                let globResult = globSync(`*(system-modules|modules)/**/locales/${language}/${namespace}.json`)
+                    .concat(globSync(`locales/${language}/${namespace}.json`));
+
+                return globResult[0];
+            }
+        }
+    });
+
+global.i18nInstance = i18next;
 
 /**
  *
