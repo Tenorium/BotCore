@@ -1,6 +1,5 @@
 import Core from "./core/core.js";
 import colors from "colors";
-import i18n from "i18n";
 import {dirname} from "path";
 import {createDefaultData} from "./system-modules/pkg/pkg-util.js";
 import path from "path";
@@ -62,8 +61,7 @@ if (config === null) {
     config = ConfigManager.readConfig('core');
 }
 
-// let translationsGlob = globSync('*(system-modules|modules)/**/locales/**/*.json').concat(globSync('locales/**/*.json'));
-let translationsGlob = globSync('*(system-modules|modules)/**/locales/**/*.json');
+let translationsGlob = globSync('*(system-modules|modules)/**/locales/**/*.json').concat(globSync('locales/**/*.json'));
 
 await i18next
     .use(Backend)
@@ -74,14 +72,12 @@ await i18next
         backend: {
             loadPath: function (language, namespace) {
                 let globResult = globSync(`*(system-modules|modules)/**/locales/${language}/${namespace}.json`)
-                    //.concat(globSync(`locales/${language}/${namespace}.json`));
+                    .concat(globSync(`locales/${language}/${namespace}.json`));
 
                 return globResult[0];
             }
         }
     });
-
-global.i18nInstance = i18next;
 
 /**
  *
@@ -98,12 +94,6 @@ let updater = new AutoGitUpdate(updaterConfig);
 
 await updater.autoUpdate();
 
-i18n.configure({
-    locales: ['en', 'ru'],
-    directory: "./locales"
-});
-
-
 colors.setTheme({
     silly: 'rainbow',
     input: 'grey',
@@ -119,6 +109,6 @@ colors.setTheme({
 
 createDefaultData()
 
-let core = new Core(config);
+let core = new Core(config, i18next);
 
 core.init();

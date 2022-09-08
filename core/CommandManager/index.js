@@ -5,7 +5,6 @@ import Logger from "../log.js";
 import CommandAlreadyRegisteredError from "./error/CommandAlreadyRegisteredError.js";
 import CommandNotExist from "./error/CommandNotExist.js";
 import CommandEventEmitter from "./event.js";
-import i18n from "i18n";
 
 const disabledCommands = [];
 
@@ -39,7 +38,7 @@ export default class CommandManager {
      * @throws CommandNotExist
      */
     static unregisterCommand(commandName) {
-        if (this.#commands.hasOwnProperty(commandName)) {
+        if (this.hasCommand(commandName)) {
             Core.getCore().unregisterClientEvent(this.#commands[commandName].uuid);
             delete this.#commands[commandName];
             return;
@@ -62,7 +61,7 @@ export default class CommandManager {
      * @return {*}
      */
     static hasCommand(commandName) {
-        return this.#commands.includes(commandName);
+        return this.#commands.hasOwnProperty(commandName);
     }
 
     /**
@@ -126,7 +125,7 @@ export default class CommandManager {
      */
     static #getWrapper(handler, command) {
         return function (message) {
-            let prefix = Core.getCore().getConfig();
+            let prefix = Core.getCore().getConfig().prefix;
             if (
                 !(message.content.startsWith(prefix)
                     || MessageMentions.USERS_PATTERN.test(message.content))
@@ -175,7 +174,10 @@ export default class CommandManager {
  * @param {Message} message
  */
 const disabledCommandHandler = function (command, message) {
-    let client = Core.getCore().getClient();
+    let core = Core.getCore();
+
+    let i18n = core.getI18n();
+    let client = core.getClient();
 
     message.reply({
         embeds: [
@@ -185,8 +187,8 @@ const disabledCommandHandler = function (command, message) {
                     iconURL: client.user.avatarURL()
                 },
                 color: "GOLD",
-                title: i18n.__('command_manager_unhandled_disabled_title'),
-                description: i18n.__('command_manager_unhandled_disabled_description', {command})`⚠ К сожалению комманда **${command}** выключена!`
+                title: i18n.t('commandManager:disabled_title'),
+                description: i18n.t('commandManager:disabled_description', {command})
             }
         ]
     });
@@ -199,7 +201,10 @@ const disabledCommandHandler = function (command, message) {
  * @param {Error} e
  */
 const errorCommandHandler = function (command, message, e) {
-    let client = Core.getCore().getClient();
+    let core = Core.getCore();
+
+    let client = core.getClient();
+    let i18n = core.getI18n();
 
     message.reply({
         embeds: [
@@ -209,8 +214,8 @@ const errorCommandHandler = function (command, message, e) {
                     iconURL: client.user.avatarURL()
                 },
                 color: "RED",
-                title: i18n.__('command_manager_unhandled_error_title'),
-                description: i18n.__('command_manager_unhandled_error_description', {command})
+                title: i18n.t('commandManager:error_title'),
+                description: i18n.t('commandManager:error_description', {command})
             }
         ]
     });
