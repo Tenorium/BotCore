@@ -1,6 +1,6 @@
 {
   "name": "botcore",
-  "version": "0.1.0-alpha",
+  "version": "0.1.1-alpha",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -17,12 +17,16 @@
     "colors": "^1.4.0",
     "discord.js": "^13.6.0",
     "glob": "^8.0.3",
-    "i18n": "^0.15.0",
+    "i18next": "^21.9.1",
+    "i18next-fs-backend": "^1.1.5",
     "moment": "^2.29.3",
+    "mysql2": "^2.3.3",
     "progress": "^2.0.3",
     "semver": "^7.3.7",
+    "sequelize": "^6.21.4",
     "sha256-file": "^1.0.0",
     "splitargs": "^0.0.7",
+    "sqlite3": "^5.0.11",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

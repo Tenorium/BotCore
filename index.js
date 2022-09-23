@@ -1,14 +1,15 @@
 import Core from "./core/core.js";
 import colors from "colors";
-import i18n from "i18n";
 import {dirname} from "path";
 import {createDefaultData} from "./system-modules/pkg/pkg-util.js";
 import path from "path";
 import os from "os";
 import AutoGitUpdate from "auto-git-update";
-import * as fs from "fs";
 import readline from "readline";
 import * as util from "util";
+import i18next from "i18next";
+import Backend from "i18next-fs-backend";
+import globSync from "glob/sync.js";
 import ConfigManager from "./core/ConfigManager/index.js";
 
 global.basePath = dirname(new URL('', import.meta.url).pathname);
@@ -60,9 +61,27 @@ if (config === null) {
     config = ConfigManager.readConfig('core');
 }
 
+let translationsGlob = globSync('*(system-modules|modules)/**/locales/**/*.json').concat(globSync('locales/**/*.json'));
+
+await i18next
+    .use(Backend)
+    .init({
+        lng: config.locale,
+        fallbackLng: 'en',
+        ns: Array.from(new Set(translationsGlob.map(value => path.basename(value, '.json')))),
+        backend: {
+            loadPath: function (language, namespace) {
+                let globResult = globSync(`*(system-modules|modules)/**/locales/${language}/${namespace}.json`)
+                    .concat(globSync(`locales/${language}/${namespace}.json`));
+
+                return globResult[0];
+            }
+        }
+    });
+
 /**
  *
- * @type {Config}
+ * @type {import('auto-git-update').Config}
  */
 let updaterConfig = {
     repository: "https://github.com/Tenorium/BotCore",
@@ -74,12 +93,6 @@ let updaterConfig = {
 let updater = new AutoGitUpdate(updaterConfig);
 
 await updater.autoUpdate();
-
-i18n.configure({
-    locales: ['en', 'ru'],
-    directory: "./locales"
-});
-
 
 colors.setTheme({
     silly: 'rainbow',
@@ -96,6 +109,6 @@ colors.setTheme({
 
 createDefaultData()
 
-let core = new Core(config);
+let core = new Core(config, i18next);
 
 core.init();

@@ -1,6 +1,0 @@
-{
-  "command_manager_unhandled_error_title": "Error!",
-  "command_manager_unhandled_error_description" : "❗ Произошла необработанная ошибка во время выполнения комманды {{command}}!",
-  "command_manager_unhandled_disabled_title": "Command disabled!",
-  "command_manager_unhandled_disabled_description": "Unfortunately the **{{command}}** command is disabled!"
-}
