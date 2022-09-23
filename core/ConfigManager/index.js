@@ -28,6 +28,10 @@ export default class ConfigManager {
     static writeConfig(namespace, name, data) {
         let configPath = path.join(basePath, `config/${namespace}/${name === undefined ? 'config.json' : `${name}.json`}`);
 
+        if (!fs.existsSync(path.join(basePath, `config/${namespace}`))) {
+            fs.mkdirSync(path.join(basePath, `config/${namespace}`));
+        }
+
         fs.writeFileSync(configPath, JSON.stringify(data));
     }
 }
