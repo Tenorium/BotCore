@@ -1,12 +1,25 @@
 import args from "splitargs";
 import Core from "../core.js";
 import {Message, MessageMentions} from "discord.js";
-import Logger from "../log.js";
+import Logger from "../../util/log.js";
 import CommandAlreadyRegisteredError from "./error/CommandAlreadyRegisteredError.js";
 import CommandNotExist from "./error/CommandNotExist.js";
 import CommandEventEmitter from "./event.js";
+import {dirname, join} from "path";
+import ConfigManager from "../../config/index.js";
+import i18n_ from "i18n";
+const {I18n} = i18n_;
+
+const i18n = new I18n({
+    locales: ['en', 'ru'],
+    directory: join(dirname(new URL('', import.meta.url).pathname), 'locale')
+});
+
+i18n.setLocale(ConfigManager.readConfig('core').locale);
 
 const disabledCommands = [];
+let messageListenerIsSet = false;
+let commands = {};
 
 export default class CommandManager {
     static #commands = {};
@@ -20,9 +33,51 @@ export default class CommandManager {
      * @throws CommandAlreadyRegisteredError
      */
     static registerCommand(commandName, handler) {
-        if (!this.#commands.hasOwnProperty(commandName)) {
-            let uuid = Core.getCore().registerClientEvent('messageCreate', this.#getWrapper(handler, commandName))
-            this.#commands[commandName] = {handler, uuid};
+        if (!messageListenerIsSet) {
+            Core.getCore().registerClientEvent('messageCreate', function (message) {
+                let prefix = Core.getCore().getConfig().prefix;
+                if (
+                    !(message.content.startsWith(prefix)
+                        || MessageMentions.USERS_PATTERN.test(message.content))
+                ) {
+                    return
+                }
+
+                let prefix_;
+
+                if (message.content.startsWith(prefix)) {
+                    prefix_ = prefix;
+                }
+
+                if (!prefix_) {
+                    prefix_ = message.content.match(MessageMentions.USERS_PATTERN)[0];
+                }
+
+                let messageWithoutPrefix = message.content.replace(prefix_, '');
+
+                let command = Object.keys(commands).filter(value => messageWithoutPrefix.startsWith(value))[0] ?? null;
+
+                if (command === null) {
+                    return;
+                }
+
+                if (disabledCommands.includes(command)) {
+                    disabledCommandHandler(command, message);
+                    return;
+                }
+
+                try {
+                    commands[command](args(message.content.replace(`${prefix_ + command} `, '')), message);
+                } catch (e) {
+                    errorCommandHandler(command, message, e);
+                }
+            });
+
+            messageListenerIsSet = true;
+        }
+
+        if (!commands.hasOwnProperty(commandName)) {
+            commands[commandName] = handler;
 
             this.getEventManager().emit('commandRegistered', commandName);
             return;
@@ -61,7 +116,7 @@ export default class CommandManager {
      * @return {*}
      */
     static hasCommand(commandName) {
-        return this.#commands.hasOwnProperty(commandName);
+        return commands.hasOwnProperty(commandName);
     }
 
     /**
@@ -115,49 +170,6 @@ export default class CommandManager {
     static getEventManager() {
         return this.#em;
     }
-
-    /**
-     *
-     * @param {CommandHandlerFunc} handler
-     * @param {string} command
-     * @return {(function(Message): void)}
-     * @private
-     */
-    static #getWrapper(handler, command) {
-        return function (message) {
-            let prefix = Core.getCore().getConfig().prefix;
-            if (
-                !(message.content.startsWith(prefix)
-                    || MessageMentions.USERS_PATTERN.test(message.content))
-            ) {
-                return
-            }
-
-            let prefix_;
-
-            if (message.content.startsWith(prefix)) {
-                prefix_ = prefix;
-            }
-
-            if (!prefix_) {
-                prefix_ = message.content.match(MessageMentions.USERS_PATTERN)[0];
-            }
-            if (!message.content.replace(prefix_, '').startsWith(command)) {
-                return;
-            }
-
-            if (disabledCommands.includes(command)) {
-                disabledCommandHandler(command, message);
-                return;
-            }
-
-            try {
-                handler(args(message.content.replace(`${prefix_ + command} `, '')), message);
-            } catch (e) {
-                errorCommandHandler(command, message, e);
-            }
-        }
-    };
 }
 
 /**
@@ -176,7 +188,6 @@ export default class CommandManager {
 const disabledCommandHandler = function (command, message) {
     let core = Core.getCore();
 
-    let i18n = core.getI18n();
     let client = core.getClient();
 
     message.reply({
@@ -187,8 +198,8 @@ const disabledCommandHandler = function (command, message) {
                     iconURL: client.user.avatarURL()
                 },
                 color: "GOLD",
-                title: i18n.t('commandManager:disabled_title'),
-                description: i18n.t('commandManager:disabled_description', {command})
+                title: i18n.__('disabled_title'),
+                description: i18n.__('disabled_description', {command})
             }
         ]
     });
@@ -204,7 +215,6 @@ const errorCommandHandler = function (command, message, e) {
     let core = Core.getCore();
 
     let client = core.getClient();
-    let i18n = core.getI18n();
 
     message.reply({
         embeds: [
@@ -214,8 +224,8 @@ const errorCommandHandler = function (command, message, e) {
                     iconURL: client.user.avatarURL()
                 },
                 color: "RED",
-                title: i18n.t('commandManager:error_title'),
-                description: i18n.t('commandManager:error_description', {command})
+                title: i18n.__('error_title'),
+                description: i18n.__('error_description', {command})
             }
         ]
     });

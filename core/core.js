@@ -1,7 +1,7 @@
 import ModuleManager from "./ModuleManager/index.js";
 import {Client} from "discord.js";
 import {v4 as uuidv4} from "uuid";
-import Logger from "./log.js";
+import Logger from "../util/log.js";
 import CoreAlreadyInitializedError from "./error/CoreAlreadyInitializedError.js";
 import CommandManager from "./CommandManager/index.js";
 import EventNotFoundError from "./error/EventNotFoundError.js";
@@ -14,23 +14,19 @@ export default class Core {
     /** @type {import('discord.js').Client} **/
     #client;
 
-    /** @type {import('i18next').i18n} */
-    #i18n;
     #initialized = false;
 
     /**
      *
      * @param config
-     * @param {import('i18next').i18n} i18n
      * @return {Core}
      */
-    constructor(config, i18n) {
+    constructor(config) {
         if (core) {
             return core;
         }
 
         this.#config = config;
-        this.#i18n = i18n;
         Logger.setConfig(this.#config.logger);
         core = this;
     }
@@ -105,11 +101,6 @@ export default class Core {
      */
     getLogger() {
         return Logger;
-    }
-
-    /** @return {import('i18next').i18n} **/
-    getI18n() {
-        return this.#i18n;
     }
 
     /**

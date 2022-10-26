@@ -1,11 +1,4 @@
 import {readdirSync} from "fs";
-
-
-export const unloadFile = function (path) {
-    let solvedName = require.resolve(path);
-    delete require.cache[solvedName]
-}
-
 /**
  *
  * @param source

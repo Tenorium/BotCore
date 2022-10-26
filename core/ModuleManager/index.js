@@ -1,8 +1,8 @@
 import {join} from "path";
 import {existsSync} from "fs";
-import Logger from "../log.js";
+import Logger from "../../util/log.js";
 import AbstractModule from "../abstractModule.js";
-import {getDirectories, unloadFile} from "../../utils.js";
+import {getDirectories} from "../../util/utils.js";
 import EventEmitter from "events";
 
 const USER_MODULES_DIR = new URL('../../modules', import.meta.url).pathname;

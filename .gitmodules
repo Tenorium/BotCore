@@ -1,9 +1,0 @@
-[submodule "system-modules/pkg"]
-	path = system-modules/pkg
-	url = https://github.com/Tenorium/BotCore-module-pkg.git
-[submodule "system-modules/help"]
-	path = system-modules/help
-	url = https://github.com/Tenorium/BotCore-module-help.git
-[submodule "system-modules/cli"]
-	path = system-modules/cli
-	url = https://github.com/Tenorium/BotCore-module-cli.git
