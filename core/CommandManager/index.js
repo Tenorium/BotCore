@@ -15,7 +15,7 @@ const i18n = new I18n({
     directory: join(dirname(new URL('', import.meta.url).pathname), 'locale')
 });
 
-i18n.setLocale(ConfigManager.readConfig('core').locale);
+i18n.setLocale(ConfigManager.readConfig('core')?.locale ?? 'en');
 
 const disabledCommands = [];
 let messageListenerIsSet = false;

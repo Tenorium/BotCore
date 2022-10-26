@@ -46,6 +46,7 @@ export default async function() {
         ConfigManager.writeConfig('core', undefined, defaultConfig);
 
         console.log("Config saved.");
+        console.log("For apply selected language restart bot.");
         config = ConfigManager.readConfig('core');
     }
 

@@ -1,0 +1,8 @@
+scripts/*
+!scripts/.gitkeep
+tmp/*
+!tmp/.gitkeep
+metadata.json
+sources.json
+state.json
+lock.json
