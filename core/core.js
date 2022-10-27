@@ -5,6 +5,7 @@ import Logger from "../util/log.js";
 import CoreAlreadyInitializedError from "./error/CoreAlreadyInitializedError.js";
 import CommandManager from "./CommandManager/index.js";
 import EventNotFoundError from "./error/EventNotFoundError.js";
+import readline from "readline";
 let core;
 
 export default class Core {
@@ -76,7 +77,20 @@ export default class Core {
      */
     shutdown() {
         this.#client.destroy();
+
         ModuleManager.unloadAll();
+        setTimeout(() => {
+            Logger.warning('It looks like one of the modules is interfering with the shutdown.');
+            const rl = readline.createInterface({input: process.stdin, output: process.stdout});
+
+            rl.question('Send [y] to force quit: ', ans => {
+                if (ans === 'y') {
+                    console.log('Force quiting...');
+                    rl.close();
+                    process.exit(0);
+                }
+            });
+        }, 30000);
     }
 
     /**
