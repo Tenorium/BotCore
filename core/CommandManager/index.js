@@ -6,7 +6,7 @@ import CommandAlreadyRegisteredError from "./error/CommandAlreadyRegisteredError
 import CommandNotExist from "./error/CommandNotExist.js";
 import CommandEventEmitter from "./event.js";
 import {dirname, join} from "path";
-import ConfigManager from "../../config/index.js";
+import ConfigManager from "../../data/index.js";
 import i18n_ from "i18n";
 const {I18n} = i18n_;
 

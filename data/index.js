@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import path, {dirname} from "path";
 
-
 export default class ConfigManager {
     /**
      *
@@ -23,10 +22,10 @@ export default class ConfigManager {
     /**
      *
      * @param {string} namespace
+     * @param data
      * @param {string=} name
-     * @param {*} data
      */
-    static writeConfig(namespace, name, data) {
+    static writeConfig(namespace, data, name=undefined) {
         let configPath = path.join(basePath, `config/${namespace}/${name === undefined ? 'config.json' : `${name}.json`}`);
 
         if (!fs.existsSync(path.join(basePath, `config/${namespace}`))) {

@@ -3,18 +3,18 @@ import {install} from "./npm-util.js";
 import Logger from "./log.js";
 
 const defaultDependencies = {
-    'auto-git-update': '1.1.1',
-    'colors': '1.4.0',
-    'discord.js': '13.6.0',
-    'uuid': '8.3.2',
-    'moment': '2.29.3',
-    'splitargs': '0.0.7',
-    'i18n': '0.15.1',
-    'semver': '7.3.8',
-    'adm-zip': '0.5.9',
-    'axios': '1.1.3',
-    'progress': '2.0.3',
-    'sha256-file': '1.0.0',
+    "adm-zip": "0.5.9",
+    "axios": "1.1.3",
+    "colors": "1.4.0",
+    "discord.js": "13.6.0",
+    "i18n": "0.15.1",
+    "moment": "2.29.4",
+    "progress": "2.0.3",
+    "semver": "7.3.8",
+    "sha256-file": "1.0.0",
+    "simple-git": "3.14.1",
+    "splitargs": "0.0.7",
+    "uuid": "8.3.2"
 }
 
 const dependencyCache = {};

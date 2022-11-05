@@ -1,4 +1,4 @@
-import ConfigManager from "../config/index.js";
+import ConfigManager from "../data/index.js";
 import readline from "readline/promises";
 
 export default async function() {
@@ -43,7 +43,7 @@ export default async function() {
         }
 
         rl.close();
-        ConfigManager.writeConfig('core', undefined, defaultConfig);
+        ConfigManager.writeConfig('core', defaultConfig);
 
         console.log("Config saved.");
         console.log("For apply selected language restart bot.");
