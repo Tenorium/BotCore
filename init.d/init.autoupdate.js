@@ -4,7 +4,10 @@ import Logger from "../util/log.js";
 import path, {dirname} from "path";
 import {existsSync, readdirSync, readFileSync, writeFileSync} from "fs";
 
-const migrationsPath = path.join(dirname(new URL('', import.meta.url).pathname), '../migrations')
+const REMOTE_NAME = 'update';
+
+const migrationsPath = path.join(dirname(new URL('', import.meta.url).pathname), '../migrations');
+
 
 const runMigration = async function (name) {
     Logger.info(`[AutoUpdate] Migrating ${name}...`);
@@ -54,11 +57,17 @@ export default async function () {
         ConfigManager.writeConfig('updater', undefined, updaterConfig);
     }
 
+    let remotes = (await git.raw('remote')).split('\n');
+
+    if (remotes.includes(REMOTE_NAME)) {
+        await git.removeRemote('update');
+    }
+
     await git.init()
-        .addRemote('origin', updaterConfig.repo)
-        .fetch()
-        .checkout(`origin/${updaterConfig.branch}`, ['--force'])
-        .raw('restore .');
+        .addRemote(REMOTE_NAME, updaterConfig.repo)
+        .fetch(REMOTE_NAME)
+        .checkout(`${REMOTE_NAME}/${updaterConfig.branch}`, ['--force'])
+        .stash();
 
     Logger.info('[AutoUpdate] Update finished');
 

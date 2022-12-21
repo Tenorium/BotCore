@@ -1,3 +1,10 @@
+## 2022-12-20
+
+---
+
+### Fixed
+* Autoupgrade, now using remote "update" and stashing local changes.
+
 
 ## 2022-11-04
 
