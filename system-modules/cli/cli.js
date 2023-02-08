@@ -1,10 +1,9 @@
-import readline from 'readline'
-import AbstractModule from '../../core/abstractModule.js'
-import Logger from '../../util/log.js'
-import Core from '../../core/core.js'
-import { run } from './default-commands.js'
-import ModuleManager from '../../core/ModuleManager/index.js'
-import * as TrieCompleter from 'readline-trie-completer'
+import readline from 'readline';
+import AbstractModule from '#abstractModule';
+import Logger from '#util/log';
+import {run} from './default-commands.js';
+import ModuleManager from '#moduleManager';
+import * as TrieCompleter from 'readline-trie-completer';
 
 const TrieCommonJS = TrieCompleter.default;
 
@@ -37,104 +36,104 @@ let isClosed = false;
 /**
  * @typedef CommandCompleter
  * @type function
- * @param {TrieCommonJS().trie} trie
+ * @param {import('readline-trie-completer').default().trie} trie
  */
 
 /**
  *
  * @type {Object<string,{handlerIndex: number, completerIndex: number}>}
  */
-const commands = {}
-const completions = []
-const handlers = []
+const commands = {};
+const completions = [];
+const handlers = [];
 
 const trieCompleter = TrieCommonJS()
 
 const commandHandler = function (input) {
-  handlers.forEach(function (value) {
-    value(input)
-  })
+    handlers.forEach(function (value) {
+        value(input);
+    })
 }
 
 export default class CliModule extends AbstractModule {
-  load () {
-    Logger.info('CLI module loading!')
+    load() {
+        Logger.info('CLI module loading!');
 
-    rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-      completer: trieCompleter.completer
-    })
+        rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+            completer: trieCompleter.completer
+        });
 
-    rl.addListener('line', function (input) {
-      rl.pause()
-      commandHandler(input)
-      if (isClosed) {
-        return
-      }
+        rl.addListener('line', function (input) {
+            rl.pause();
+            commandHandler(input);
+            if (isClosed) {
+                return;
+            }
 
-      rl.resume()
-      rl.prompt()
-    })
-    rl.addListener('close', () => {
-      isClosed = true
-    })
-    rl.addListener('SIGINT', function () {
-      Core.getCore().shutdown()
-    })
+            rl.resume();
+            rl.prompt();
+        })
+        rl.addListener('close', () => {
+            isClosed = true;
+        })
+        rl.addListener('SIGINT', function () {
+            app().shutdown();
+        })
 
-    run(this)
+        run(this);
 
-    ModuleManager.getEventManager().once('autoLoadFinished', () => {
-      rl.prompt()
-    })
-  }
+        ModuleManager.getEventManager().once('autoLoadFinished', () => {
+            rl.prompt();
+        })
+    }
 
-  /**
+    /**
      *
      * @type {AddCommandFunc}
      */
-  addCommand (command, commandHandler, commandCompleter = null) {
-    const handlerIndex = handlers.push(commandHandler) - 1
-    let completerIndex
-    if (commandCompleter) {
-      completerIndex = completions.push(commandCompleter) - 1
+    addCommand(command, commandHandler, commandCompleter = null) {
+        const handlerIndex = handlers.push(commandHandler) - 1;
+        let completerIndex;
+        if (commandCompleter) {
+            completerIndex = completions.push(commandCompleter) - 1;
+        }
+
+        commands[command] = {handlerIndex, completerIndex: completerIndex ?? null};
     }
 
-    commands[command] = { handlerIndex, completerIndex: completerIndex ?? null }
-  }
-
-  /**
+    /**
      *
      * @type {RemoveCommandFunc}
      */
-  removeCommand (command) {
-    const { handlerIndex, completerIndex } = commands[command]
+    removeCommand(command) {
+        const {handlerIndex, completerIndex} = commands[command];
 
-    delete handlers[handlerIndex]
-    if (!completerIndex) {
-      return
+        delete handlers[handlerIndex];
+        if (!completerIndex) {
+            return;
+        }
+        delete completions[completerIndex];
     }
-    delete completions[completerIndex]
-  }
 
-  pauseCli () {
-    isClosed = true
-    if (!rl.paused) {
-      rl.pause()
+    pauseCli() {
+        isClosed = true;
+        if (!rl.paused) {
+            rl.pause();
+        }
     }
-  }
 
-  resumeCli () {
-    isClosed = false
-    if (rl.paused) {
-      rl.resume()
+    resumeCli() {
+        isClosed = false;
+        if (rl.paused) {
+            rl.resume();
+        }
+        // rl.prompt();
     }
-    // rl.prompt();
-  }
 
-  unload () {
-    Logger.info('Closing CLI...')
-    rl.close()
-  }
+    unload() {
+        Logger.info('Closing CLI...');
+        rl.close();
+    }
 }

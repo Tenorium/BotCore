@@ -1,12 +1,12 @@
-import ConfigManager from '../data/index.js'
+import ConfigManager from '#configManager';
 import readline from 'readline/promises';
 
 export default async function () {
-  let config = ConfigManager.readConfig('core')
+  let config = ConfigManager.readConfig('core');
 
   if (config === null) {
-    console.log('Config not exist.')
-    console.log('Starting configuration wizard...')
+    console.log('Config not exist.');
+    console.log('Starting configuration wizard...');
 
     let defaultConfig = {
       logger: {
@@ -18,21 +18,20 @@ export default async function () {
           32767
         ]
       }
-    }
+    };
 
-    const rl = readline.createInterface(process.stdin, process.stdout)
-    // const question = util.promisify(rl.question).bind(rl);
+    const rl = readline.createInterface(process.stdin, process.stdout);
 
-    let locale = await rl.question('Select language(default "en", available "en", "ru"): ')
+    let locale = await rl.question('Select language(default "en", available "en", "ru"): ');
     if (!['en', 'ru'].includes(locale)) {
-      locale = 'en'
+      locale = 'en';
     }
 
-    const token = await rl.question('Enter bot token: ')
-    let prefix = await rl.question('Enter prefix(default "//"): ')
+    const token = await rl.question('Enter bot token: ');
+    let prefix = await rl.question('Enter prefix(default "//"): ');
 
     if (prefix.length === 0) {
-      prefix = '//'
+      prefix = '//';
     }
 
     defaultConfig = {
@@ -40,15 +39,15 @@ export default async function () {
       locale,
       token,
       prefix
-    }
+    };
 
-    rl.close()
-    ConfigManager.writeConfig('core', defaultConfig)
+    rl.close();
+    ConfigManager.writeConfig('core', defaultConfig);
 
-    console.log('Config saved.')
-    console.log('For apply selected language restart bot.')
-    config = ConfigManager.readConfig('core')
+    console.log('Config saved.');
+    console.log('For apply selected language restart bot.');
+    config = ConfigManager.readConfig('core');
   }
 
-  return config
+  return config;
 }

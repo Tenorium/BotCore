@@ -1,26 +1,30 @@
-import { dirname } from 'path'
-import getConfig from './init.d/init.config.js'
-import colors from 'colors'
-import initCore from './init.d/init.core.js'
-import autoUpdate from './init.d/init.autoupdate.js'
+import {dirname} from 'path';
+import getConfig from './init.d/init.config.js';
+import colors from 'colors';
+import initCore from './init.d/init.core.js';
+import autoUpdate from './init.d/init.autoupdate.js';
 
-global.basePath = dirname(new URL('', import.meta.url).pathname)
+/**
+ * @global
+ * @type {string}
+ */
+global.basePath = dirname(new URL('', import.meta.url).pathname);
 
-const config = await getConfig()
+const config = await getConfig();
 
-await autoUpdate()
+await autoUpdate();
 
 colors.setTheme({
-  silly: 'rainbow',
-  input: 'grey',
-  verbose: 'cyan',
-  prompt: 'grey',
-  info: 'green',
-  data: 'grey',
-  help: 'cyan',
-  warn: 'yellow',
-  debug: 'blue',
-  error: 'red'
-})
+    silly: 'rainbow',
+    input: 'grey',
+    verbose: 'cyan',
+    prompt: 'grey',
+    info: 'green',
+    data: 'grey',
+    help: 'cyan',
+    warn: 'yellow',
+    debug: 'blue',
+    error: 'red'
+});
 
-await initCore(config)
+await initCore(config);

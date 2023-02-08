@@ -1,4 +1,4 @@
-import {spawn} from 'child_process';
+import {spawn} from "child_process";
 
 function isValidGitUrl(string) {
     let url;
@@ -9,31 +9,43 @@ function isValidGitUrl(string) {
         return false;
     }
 
-    return url.protocol === 'http:' || url.protocol === 'https:' || url.protocol === 'git:';
+    return url.protocol === "http:" || url.protocol === "https:" || url.protocol === "git:";
 }
 
 /**
  * Install packages
- * @param {Object<string, string>} packages
+ * @param {PackageRecord[]} packages
  * @return {Promise<unknown>}
  */
 export const install = function (packages) {
-    const command = 'npm';
-    const args = ['install'];
-
-    Object.keys(packages).forEach(packageName => {
-        if (!packages[packageName]) {
-            args.push(packageName);
+    let command = 'npm';
+    let args = ['install']
+    packages.forEach(packageObject => {
+        if (!packageObject.version) {
+            args.push(packageObject.name);
             return;
         }
 
-        if (isValidGitUrl(packages[packageName])) {
-            args.push(packages[packageName]);
-            return;
+        if (isValidGitUrl(packageObject.version)) {
+            args.push(packageObject.version);
         }
 
-        args.push(`${packageName}@${packages[packageName]}`);
-    })
+        args.push(`${packageObject.name}@${packageObject.version}`);
+    });
+
+    return runNpmCommand(command, args);
+}
+
+/**
+ *
+ * @param {PackageRecord[]} packages
+ */
+export const uninstall = function (packages) {
+    let command = 'npm';
+    let args = ['uninstall']
+    packages.forEach(packageObject => {
+        args.push(`${packageObject.name}@${packageObject.version}`)
+    });
 
     return runNpmCommand(command, args);
 }
@@ -46,7 +58,7 @@ export const install = function (packages) {
  */
 const runNpmCommand = function (command, args) {
     return new Promise((resolve, reject) => {
-        const npmProcess = spawn(command, args, {
+        let npmProcess = spawn(command, args, {
             cwd: basePath
         });
         npmProcess.stdout.setEncoding('utf-8');
@@ -57,7 +69,7 @@ const runNpmCommand = function (command, args) {
         npmProcess.stderr.setEncoding('utf-8');
         npmProcess.stderr.on('data', function (data) {
             console.error(data);
-        })
+        });
 
         npmProcess.on('close', code => {
             if (code !== 0) {
@@ -65,7 +77,7 @@ const runNpmCommand = function (command, args) {
             }
             resolve();
         });
-    });
+    })
 }
 
 /**

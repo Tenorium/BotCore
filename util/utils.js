@@ -1,13 +1,13 @@
-import { readdirSync } from 'fs'
+import {readdirSync} from 'fs';
+
 /**
  *
  * @param source
  * @returns {string[]}
  */
-export const getDirectories = source =>
-  readdirSync(source, { withFileTypes: true })
+export const getDirectories = source => readdirSync(source, {withFileTypes: true})
     .filter(dirent => dirent.isDirectory())
-    .map(dirent => dirent.name)
+    .map(dirent => dirent.name);
 
 /**
  *
@@ -16,17 +16,17 @@ export const getDirectories = source =>
  * @return {boolean}
  */
 export const arrayIncludesAll = function (searchElements, haystack) {
-  if (searchElements.length > haystack.length) {
-    return false
-  }
-
-  let flag = true
-  for (const searchElement of searchElements) {
-    if (!haystack.includes(searchElement)) {
-      flag = false
-      break
+    if (searchElements.length > haystack.length) {
+        return false;
     }
-  }
 
-  return flag
+    let flag = true;
+    for (const searchElement of searchElements) {
+        if (!haystack.includes(searchElement)) {
+            flag = false;
+            break;
+        }
+    }
+
+    return flag;
 }

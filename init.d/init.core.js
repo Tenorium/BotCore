@@ -1,7 +1,6 @@
-import Core from '../core/core.js'
+import Core from '#core';
 
 export default async function (config) {
-  const core = new Core(config)
-  global.core = core
-  core.init()
+  const core = new Core(config);
+  core.init();
 }

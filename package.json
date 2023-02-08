@@ -29,6 +29,17 @@
     "splitargs": "^0.0.7",
     "uuid": "^8.3.2"
   },
+  "imports": {
+    "#abstractModule": "./core/abstractModule.js",
+    "#configManager": "./data/index.js",
+    "#core": "./core/core.js",
+    "#commandManager": "./core/CommandManager/index.js",
+    "#moduleManager": "./core/ModuleManager/index.js",
+    "#system-module/cli": "./system-modules/cli/cli.js",
+    "#system-module/help": "./system-modules/help/help.js",
+    "#system-module/pkg": "./system-modules/pkg/pkg.js",
+    "#util/*": "./util/*.js"
+  },
   "devDependencies": {
     "@types/semver": "^7.3.7",
     "@typescript-eslint/eslint-plugin": "^5.47.0",
