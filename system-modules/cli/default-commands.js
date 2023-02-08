@@ -2,104 +2,103 @@
  *
  * @param {CliModule} cli
  */
-import Core from "../../core/core.js";
-import splitargs from "splitargs";
-import CommandManager from "../../core/CommandManager/index.js";
+import Core from '../../core/core.js'
+import splitargs from 'splitargs'
+import CommandManager from '../../core/CommandManager/index.js'
 
 export const run = function (cli) {
+  cli.addCommand('shutdown',
+    function (input) {
+      const args = splitargs(input)
 
-    cli.addCommand('shutdown',
-        function (input) {
-            let args = splitargs(input);
+      if (args[0] === 'shutdown') {
+        Core.getCore().shutdown()
+      }
+    },
+    function (line) {
+      return 'shutdown'.startsWith(line) ? ['shutdown'] : null
+    }
+  )
 
-            if (args[0] === 'shutdown') {
-                Core.getCore().shutdown();
-            }
-        },
-        function (line) {
-            return 'shutdown'.startsWith(line) ? ['shutdown'] : null;
+  cli.addCommand('command',
+    function (input) {
+      const args = splitargs(input)
+
+      if (args[0] !== 'command') {
+        return
+      }
+
+      const checkCommand = function () {
+        const commandName = args[2] ?? null
+        if (!commandName || commandName.length === 0) {
+          console.log('Please, enter command name!')
+          return false
         }
-    );
 
-    cli.addCommand('command',
-        function (input) {
-            let args = splitargs(input);
+        if (!CommandManager.listCommands().includes(commandName)) {
+          console.log('Command don\'t exists!')
+          return false
+        }
 
-            if (args[0] !== 'command') {
-                return;
-            }
+        return true
+      }
 
-            let checkCommand = function () {
-                let commandName = args[2] ?? null;
-                if (!commandName || commandName.length === 0) {
-                    console.log('Please, enter command name!');
-                    return false;
-                }
+      switch (args[1]) {
+        case 'disable':
+          if (!checkCommand()) {
+            return
+          }
 
-                if (!CommandManager.listCommands().includes(commandName)) {
-                    console.log('Command don\'t exists!');
-                    return false;
-                }
+          CommandManager.disableCommand(args[2])
+          return
+        case 'enable':
+          if (!checkCommand()) {
+            return
+          }
 
-                return true;
-            }
+          CommandManager.enableCommand(args[2])
+          return
+        case 'list':
+          let list = CommandManager.listCommands()
+          list = list.map(value => (CommandManager.isDisabled(value) ? '[D] ' : '[E] ') + value)
+          console.log(list.join('\n'))
+      }
+    },
+    function (line) {
+      const getCommands = function () {
+        const commands = CommandManager.listCommands()
+        const hits = commands.filter(value => value.startsWith(line.replace(args[0] + args[1]).trim()))
+        let arr = hits
 
-            switch (args[1]) {
-                case 'disable':
-                    if (!checkCommand()) {
-                        return;
-                    }
+        if (!hits.length) {
+          arr = commands
+        }
+        return arr.map(value => `${args[0]} ${args[1]} ${value}`)
+      }
+      const args = splitargs(line)
+      if (args[0] !== 'command') {
+        if ('command'.startsWith(line)) {
+          return ['command']
+        }
+        return null
+      }
 
-                    CommandManager.disableCommand(args[2]);
-                    return;
-                case 'enable':
-                    if (!checkCommand()) {
-                        return;
-                    }
+      switch (args[1]) {
+        case 'disable':
+          return getCommands()
+        case 'enable':
+          return getCommands()
+        case 'list':
+          return ['command list']
+        default:
+          const subcommands = ['disable', 'enable', 'list']
+          const filtered = subcommands.filter(value => value.startsWith(args[1]))
+          let arr = filtered
+          if (!filtered.length) {
+            arr = subcommands
+          }
 
-                    CommandManager.enableCommand(args[2]);
-                    return;
-                case 'list':
-                    let list = CommandManager.listCommands();
-                    list = list.map(value => (CommandManager.isDisabled(value) ? '[D] ' : '[E] ') + value)
-                    console.log(list.join('\n'));
-            }
-        },
-        function (line) {
-            let getCommands = function () {
-                let commands = CommandManager.listCommands()
-                let hits = commands.filter(value => value.startsWith(line.replace(args[0] + args[1]).trim()));
-                let arr = hits;
-
-                if (!hits.length) {
-                    arr = commands;
-                }
-                return arr.map(value => `${args[0]} ${args[1]} ${value}`)
-            }
-            let args = splitargs(line);
-            if (args[0] !== 'command') {
-                if ('command'.startsWith(line)) {
-                    return ['command'];
-                }
-                return null;
-            }
-
-            switch (args[1]) {
-                case 'disable':
-                    return getCommands();
-                case 'enable':
-                    return getCommands();
-                case 'list':
-                    return ['command list'];
-                default:
-                    let subcommands = ['disable', 'enable', 'list'];
-                    let filtered = subcommands.filter(value => value.startsWith(args[1]));
-                    let arr = filtered;
-                    if (!filtered.length) {
-                        arr = subcommands;
-                    }
-
-                    return arr.map(value => 'command ' + value);
-            }
-        });
+          return arr.map(value => 'command ' + value)
+      }
+    })
 }

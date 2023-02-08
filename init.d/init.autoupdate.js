@@ -1,77 +1,80 @@
-import simpleGit from "simple-git";
-import ConfigManager from "../data/index.js";
-import Logger from "../util/log.js";
-import path, {dirname} from "path";
-import {existsSync, readdirSync, readFileSync, writeFileSync} from "fs";
+import simpleGit from 'simple-git'
+import ConfigManager from '../data/index.js'
+import Logger from '../util/log.js'
+import path, { dirname } from 'path'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 
-const REMOTE_NAME = 'update';
+const REMOTE_NAME = 'update'
 
-const migrationsPath = path.join(dirname(new URL('', import.meta.url).pathname), '../migrations');
-
+const migrationsPath = path.join(dirname(new URL('', import.meta.url).pathname), '../migrations')
 
 const runMigration = async function (name) {
-    Logger.info(`[AutoUpdate] Migrating ${name}...`);
-    await (await import(path.join(migrationsPath, name))).default();
+  Logger.info(`[AutoUpdate] Migrating ${name}...`)
+  await (await import(path.join(migrationsPath, name))).default()
 }
 
 const execMigrations = async function () {
-    let migrations = readdirSync(migrationsPath, {withFileTypes: true})
-        .filter(dirent => dirent.isFile())
-        .filter(dirent => dirent.name !== 'migrations.json' || dirent.name !== '.gitignore')
-        .map(dirent => dirent.name)
-        .sort((a, b) => a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'}));
+  const migrations = readdirSync(migrationsPath, { withFileTypes: true })
+    .filter(dirent => dirent.isFile())
+    .filter(dirent => dirent.name !== 'migrations.json' || dirent.name !== '.gitignore')
+    .map(dirent => dirent.name)
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }))
 
-    let executedMigrations;
+  let executedMigrations
 
-    if (!existsSync(path.join(migrationsPath, 'migrations.json'))) {
-        executedMigrations = [];
-    } else {
-        executedMigrations = JSON.parse(readFileSync(path.join(migrationsPath, 'migrations.json')).toString());
+  if (!existsSync(path.join(migrationsPath, 'migrations.json'))) {
+    executedMigrations = []
+  } else {
+    executedMigrations = JSON.parse(readFileSync(path.join(migrationsPath, 'migrations.json')).toString())
+  }
+
+  for (const migration of migrations) {
+    if (executedMigrations.contains(migration)) {
+      continue
     }
 
-    for (const migration of migrations) {
-        if (executedMigrations.contains(migration)) {
-            continue;
-        }
+    await runMigration(migration)
+    executedMigrations.push(migration)
+  }
 
-        await runMigration(migration);
-        executedMigrations.push(migration);
-    }
-
-    writeFileSync(path.join(migrationsPath, 'migrations.json'), JSON.stringify(executedMigrations));
+  writeFileSync(path.join(migrationsPath, 'migrations.json'), JSON.stringify(executedMigrations))
 }
 
 export default async function () {
-    Logger.info('[AutoUpdate] Pulling remote repo...')
+  if (!ConfigManager.readConfig('updater').autoupdate) {
+    return
+  }
 
-    const git = simpleGit(basePath);
-    let updaterConfig = ConfigManager.readConfig('updater');
+  Logger.info('[AutoUpdate] Pulling remote repo...')
 
-    if (updaterConfig === null) {
-        updaterConfig = {
-            autoupdate: true,
-            repo: 'https://github.com/Tenorium/BotCore.git',
-            branch: 'master'
-        };
+  const git = simpleGit(global.basePath)
+  let updaterConfig = ConfigManager.readConfig('updater')
 
-        ConfigManager.writeConfig('updater', undefined, updaterConfig);
+  if (updaterConfig === null) {
+    updaterConfig = {
+      autoupdate: true,
+      repo: 'https://github.com/Tenorium/BotCore.git',
+      branch: 'master'
     }
 
-    let remotes = (await git.raw('remote')).split('\n');
+    ConfigManager.writeConfig('updater', undefined, updaterConfig)
+  }
 
-    if (remotes.includes(REMOTE_NAME)) {
-        await git.removeRemote('update');
-    }
+  const remotes = (await git.raw('remote')).split('\n')
 
-    await git.init()
-        .addRemote(REMOTE_NAME, updaterConfig.repo)
-        .fetch(REMOTE_NAME)
-        .checkout(`${REMOTE_NAME}/${updaterConfig.branch}`, ['--force'])
-        .stash();
+  if (remotes.includes(REMOTE_NAME)) {
+    await git.removeRemote('update')
+  }
 
-    Logger.info('[AutoUpdate] Update finished');
+  await git.init()
+    .addRemote(REMOTE_NAME, updaterConfig.repo)
+    .fetch(REMOTE_NAME)
+    .checkout(`${REMOTE_NAME}/${updaterConfig.branch}`, ['--force'])
+    .stash()
 
-    Logger.info('[AutoUpdate] Executing migrations...');
+  Logger.info('[AutoUpdate] Update finished')
 
-    await execMigrations();
+  Logger.info('[AutoUpdate] Executing migrations...')
+
+  await execMigrations()
 }
