@@ -1,6 +1,6 @@
 import args from 'splitargs';
 import {MessageMentions} from 'discord.js';
-import Logger from '#util/log';
+import {ClassLogger} from "#util/log";
 import CommandAlreadyRegisteredError from './error/CommandAlreadyRegisteredError.js';
 import CommandNotExist from './error/CommandNotExist.js';
 import CommandEventEmitter from './event.js';
@@ -21,9 +21,10 @@ const disabledCommands = [];
 let messageListenerIsSet = false;
 const commands = {};
 
-export default class CommandManager {
+export default class CommandManager extends ClassLogger {
     static #commands = {};
     static #em = new CommandEventEmitter();
+    static _className = 'CommandManager';
 
     /**
      * Register command (chat command, not slash command)
@@ -229,8 +230,7 @@ const errorCommandHandler = function (command, message, e) {
             }
         ]
     });
-
-    Logger.error('Unhandled error from command.\n', e);
+    CommandManager.error('Unhandled error from command.\n', e)
 }
 
 /**

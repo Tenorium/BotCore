@@ -1,11 +1,15 @@
 import {arrayIncludesAll} from './utils.js';
-import {install} from './npm-util.js';
+import {install, listInstalled} from './npm-util.js';
 import Logger from './log.js';
+import semver from "semver/preload.js";
+
+const logsPrefix = '[DependencyResolver]';
 
 const defaultDependencies = {
     'adm-zip': '0.5.9',
     axios: '1.1.3',
     colors: '1.4.0',
+    'comment-parser': '1.3.1',
     'discord.js': '13.6.0',
     i18n: '0.15.1',
     moment: '2.29.4',
@@ -14,18 +18,35 @@ const defaultDependencies = {
     'sha256-file': '1.0.0',
     'simple-git': '3.14.1',
     splitargs: '0.0.7',
-    uuid: '8.3.2'
+    uuid: '8.3.2',
+    "wtfnode": '0.9.1'
 };
 
-const dependencyCache = {};
+const dependencyCache = await listInstalled();
 
+/**
+ *
+ * @param name
+ * @param version
+ * @return {boolean}
+ */
 const addDependency = function (name, version) {
-    if (Object.hasOwn(dependencyCache, name)) {
-        Logger.warning(`[DependencyResolver] Updating package "${name}" from ${dependencyCache[name]} to ${version}`);
+    if (
+        Object.hasOwn(dependencyCache, name)
+    ) {
+        if (semver.gt(version, dependencyCache[name])) {
+            Logger.warning(`${logsPrefix} Updating package "${name}" from ${dependencyCache[name]} to ${version}`);
+            dependencyCache[name] = version;
+            return true;
+        }
+
+        return false;
     }
 
     dependencyCache[name] = version;
-    Logger.debug(`[DependencyResolver] Added dependency "${name}"="${version}"`);
+    Logger.debug(`${logsPrefix} Added dependency "${name}"="${version}"`);
+
+    return true;
 }
 
 const removeDependency = function (name) {
@@ -34,7 +55,7 @@ const removeDependency = function (name) {
     }
 
     delete dependencyCache[name];
-    Logger.debug(`[DependencyResolver] Remove dependency "${name}"`);
+    Logger.debug(`${logsPrefix} Remove dependency "${name}"`);
 }
 
 const installDependencies = async function () {
@@ -53,14 +74,23 @@ export default async function (depObject) {
         return true;
     }
 
-    Logger.info('[DependecyResolver] Adding dependencies...');
+    Logger.info(`${logsPrefix} Adding dependencies...`);
+
+    let skip = true;
 
     Object.keys(depObject).forEach(name => {
-        addDependency(name, depObject[name]);
+        if (addDependency(name, depObject[name])) {
+            skip = false;
+        }
     })
 
-    Logger.info('[DependencyResolver] Installing dependencies...');
+    if (skip) {
+        Logger.info(`${logsPrefix} Dependencies already installed.Skipped.`);
+        return;
+    }
+
+    Logger.info(`${logsPrefix} Installing dependencies...`);
 
     await installDependencies();
-    Logger.info('[DependencyResolver] Dependencies installed.');
+    Logger.info(`${logsPrefix} Dependencies installed.`);
 }

@@ -4,7 +4,7 @@ import {v4 as uuidv4} from 'uuid';
 import Logger from '#util/log';
 import CoreAlreadyInitializedError from './error/CoreAlreadyInitializedError.js';
 import EventNotFoundError from './error/EventNotFoundError.js';
-import readline from 'readline';
+import wtfnode from "wtfnode";
 
 let core;
 
@@ -88,19 +88,9 @@ export default class Core {
     shutdown() {
         this.#client.destroy();
 
-        ModuleManager.unloadAll();
-        setTimeout(() => {
-            Logger.warning('It looks like one of the modules is interfering with the shutdown.');
-            const rl = readline.createInterface({input: process.stdin, output: process.stdout});
+        wtfnode.init();
 
-            rl.question('Send [y] to force quit: ', ans => {
-                if (ans === 'y') {
-                    console.log('Force quiting...');
-                    rl.close();
-                    process.exit(0);
-                }
-            });
-        }, 30000);
+        ModuleManager.unloadAll();
     }
 
     /**

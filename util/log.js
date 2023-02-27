@@ -69,3 +69,44 @@ export default class Logger {
         console.log(`[${date}] [${level.toUpperCase()}] ${message}`);
     }
 }
+
+export class ClassLogger {
+
+    static _className = 'UnknownClass';
+    static info(message) {
+        Logger.info(`[${this._className}] ${message}`);
+    }
+
+    /**
+     * Print WARNING log
+     * @param message
+     */
+    static warning(message) {
+        Logger.warning(`[${this._className}] ${message}`);
+    }
+
+    /**
+     * Print ERROR log
+     * @param message
+     * @param {Error|null} e
+     */
+    static error(message, e = null) {
+        Logger.error(`[${this._className}] ${message}`, e);
+    }
+
+    /**
+     * Print FATAL log
+     * @param message
+     */
+    static fatal(message) {
+        Logger.fatal(`[${this._className}] ${message}`);
+    }
+
+    /**
+     * Print DEBUG log
+     * @param message
+     */
+    static debug(message) {
+        Logger.debug(`[${this._className}] ${message}`);
+    }
+}

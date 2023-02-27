@@ -1,22 +1,25 @@
 import {join} from 'path';
-import {existsSync} from 'fs';
-import Logger from '#util/log';
+import fs, {existsSync} from 'fs';
+import {ClassLogger} from '#util/log';
 import AbstractModule from '#abstractModule';
 import {getDirectories} from '#util/utils';
 import ModuleEventEmitter from "./event.js";
+import {parse} from "comment-parser";
+import dependencyResolver from "#util/dependency-resolver";
 
 const USER_MODULES_DIR = new URL('../../modules', import.meta.url).pathname;
 const SYSTEM_MODULES_DIR = new URL('../../system-modules', import.meta.url).pathname;
 
-export default class ModuleManager {
+export default class ModuleManager extends ClassLogger {
     static #modules = {};
     static #em = new ModuleEventEmitter();
+    static _className = 'ModuleManager';
 
     static async autoload() {
         const modules = this.list();
 
         for (const module_ of modules) {
-            Logger.debug(`[ModuleManager] Loading module ${module_}`);
+            this.debug(`Loading module ${module_}`);
             await this.load(module_);
         }
         this.getEventManager().emit('autoLoadFinished');
@@ -32,12 +35,29 @@ export default class ModuleManager {
         }
 
         const path = this.#getModulePath(name);
-        Logger.debug(`[ModuleManager] Path for module ${name} is ${path}`);
+        this.debug(`Path for module ${name} is ${path}`);
         if (!path) {
             return false;
         }
 
         try {
+            const moduleSource = fs.readFileSync(path).toString('utf-8');
+
+            this.debug(`Parsing module source for get metadata`);
+            const {tags} = parse(moduleSource)[0];
+
+            let dependencies = {};
+
+            tags.forEach(( /** import('comment-parser').Spec */ tag) => {
+                if (tag.tag === 'dependencies') {
+                    dependencies = JSON.parse(tag.type);
+                }
+            });
+
+            await dependencyResolver(dependencies);
+
+            this.debug(`Dependencies installed`);
+
             const module_ = (await import(path)).default;
             if (!(module_.prototype instanceof AbstractModule)) {
                 throw new Error('Module not extends AbstractModule class');
@@ -57,7 +77,7 @@ export default class ModuleManager {
 
             return true;
         } catch (e) {
-            Logger.error(`Error at loading module ${name}`, e);
+            this.error(`Error at loading module ${name}`, e)
         }
 
         return false;
@@ -110,9 +130,9 @@ export default class ModuleManager {
     }
 
     static unloadAll() {
-        Logger.info('Unloading all modules!');
+        this.info(`Unloading all modules`);
         this.listLoaded().forEach((name) => {
-            Logger.debug(`Unloading module ${name}`);
+            this.debug(`Unloading module ${name}`);
             this.unload(name);
         });
     }

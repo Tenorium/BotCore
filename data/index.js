@@ -32,6 +32,6 @@ export default class ConfigManager {
             fs.mkdirSync(path.join(global.basePath, `config/${namespace}`));
         }
 
-        fs.writeFileSync(configPath, JSON.stringify(data));
+        fs.writeFileSync(configPath, JSON.stringify(data, null, 2));
     }
 }
