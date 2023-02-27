@@ -41,6 +41,15 @@ const execMigrations = async function () {
 }
 
 export default async function () {
+    if (ConfigManager.readConfig('updater') === null) {
+        ConfigManager.writeConfig('updater',
+            {
+                autoupdate: false,
+                "repo": "https://github.com/Tenorium/BotCore.git",
+                "branch": "master"
+            });
+    }
+
     if (!ConfigManager.readConfig('updater').autoupdate) {
         return;
     }
