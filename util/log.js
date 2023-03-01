@@ -70,44 +70,43 @@ export default class Logger {
     }
 }
 
-export class ClassLogger {
-
-    static _className = 'UnknownClass';
-
-    /**
-     * Print WARNING log
-     * @param message
-     */
-    static _warning(message) {
+export const ClassLoggerMixin = {
+    _warning(message) {
         Logger.warning(`[${this._className}] ${message}`);
-    }
+    },
 
-    /**
-     * Print ERROR log
-     * @param message
-     * @param {Error|null} e
-     */
-    static _error(message, e = null) {
+    _error(message, e = null) {
         Logger.error(`[${this._className}] ${message}`, e);
-    }
+    },
 
     /**
      * Print FATAL log
      * @param message
      */
-    static _fatal(message) {
+    _fatal(message) {
         Logger.fatal(`[${this._className}] ${message}`);
-    }
+    },
 
     /**
      * Print DEBUG log
      * @param message
      */
-    static _debug(message) {
+    _debug(message) {
         Logger.debug(`[${this._className}] ${message}`);
-    }
+    },
 
-    static _info(message) {
+    _info(message) {
         Logger.info(`[${this._className}] ${message}`);
     }
 }
+
+class ClassLogger {
+    static _className = 'UnknownClass';
+}
+
+Object.assign(ClassLogger, ClassLoggerMixin);
+
+export {
+    ClassLogger
+}
+
