@@ -230,7 +230,7 @@ const errorCommandHandler = function (command, message, e) {
             }
         ]
     });
-    CommandManager.error('Unhandled error from command.\n', e)
+    CommandManager._error('Unhandled error from command.\n', e)
 }
 
 /**

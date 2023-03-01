@@ -19,7 +19,7 @@ export default class ModuleManager extends ClassLogger {
         const modules = this.list();
 
         for (const module_ of modules) {
-            this.debug(`Loading module ${module_}`);
+            this._debug(`Loading module ${module_}`);
             await this.load(module_);
         }
         this.getEventManager().emit('autoLoadFinished');
@@ -35,7 +35,7 @@ export default class ModuleManager extends ClassLogger {
         }
 
         const path = this.#getModulePath(name);
-        this.debug(`Path for module ${name} is ${path}`);
+        this._debug(`Path for module ${name} is ${path}`);
         if (!path) {
             return false;
         }
@@ -43,7 +43,7 @@ export default class ModuleManager extends ClassLogger {
         try {
             const moduleSource = fs.readFileSync(path).toString('utf-8');
 
-            this.debug(`Parsing module source for get metadata`);
+            this._debug(`Parsing module source for get metadata`);
             const {tags} = parse(moduleSource)[0];
 
             let dependencies = {};
@@ -56,7 +56,7 @@ export default class ModuleManager extends ClassLogger {
 
             await dependencyResolver(dependencies);
 
-            this.debug(`Dependencies installed`);
+            this._debug(`Dependencies installed`);
 
             const module_ = (await import(path)).default;
             if (!(module_.prototype instanceof AbstractModule)) {
@@ -77,7 +77,7 @@ export default class ModuleManager extends ClassLogger {
 
             return true;
         } catch (e) {
-            this.error(`Error at loading module ${name}`, e)
+            this._error(`Error at loading module ${name}`, e)
         }
 
         return false;
@@ -130,9 +130,9 @@ export default class ModuleManager extends ClassLogger {
     }
 
     static unloadAll() {
-        this.info(`Unloading all modules`);
+        this._info(`Unloading all modules`);
         this.listLoaded().forEach((name) => {
-            this.debug(`Unloading module ${name}`);
+            this._debug(`Unloading module ${name}`);
             this.unload(name);
         });
     }

@@ -73,15 +73,12 @@ export default class Logger {
 export class ClassLogger {
 
     static _className = 'UnknownClass';
-    static info(message) {
-        Logger.info(`[${this._className}] ${message}`);
-    }
 
     /**
      * Print WARNING log
      * @param message
      */
-    static warning(message) {
+    static _warning(message) {
         Logger.warning(`[${this._className}] ${message}`);
     }
 
@@ -90,7 +87,7 @@ export class ClassLogger {
      * @param message
      * @param {Error|null} e
      */
-    static error(message, e = null) {
+    static _error(message, e = null) {
         Logger.error(`[${this._className}] ${message}`, e);
     }
 
@@ -98,7 +95,7 @@ export class ClassLogger {
      * Print FATAL log
      * @param message
      */
-    static fatal(message) {
+    static _fatal(message) {
         Logger.fatal(`[${this._className}] ${message}`);
     }
 
@@ -106,7 +103,11 @@ export class ClassLogger {
      * Print DEBUG log
      * @param message
      */
-    static debug(message) {
+    static _debug(message) {
         Logger.debug(`[${this._className}] ${message}`);
+    }
+
+    static _info(message) {
+        Logger.info(`[${this._className}] ${message}`);
     }
 }
