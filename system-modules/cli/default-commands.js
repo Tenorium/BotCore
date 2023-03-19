@@ -8,11 +8,7 @@ import CommandManager from '#commandManager';
 export const run = function (cli) {
   cli.addCommand('shutdown',
     function (input) {
-      const args = splitargs(input);
-
-      if (args[0] === 'shutdown') {
-        app().shutdown();
-      }
+      app().shutdown();
     },
     function (line) {
       return 'shutdown'.startsWith(line) ? ['shutdown'] : null;
@@ -22,10 +18,6 @@ export const run = function (cli) {
   cli.addCommand('command',
     function (input) {
       const args = splitargs(input);
-
-      if (args[0] !== 'command') {
-        return;
-      }
 
       const checkCommand = function () {
         const commandName = args[2] ?? null;
@@ -58,46 +50,34 @@ export const run = function (cli) {
           CommandManager.enableCommand(args[2]);
           return;
         case 'list':
+          // eslint-disable-next-line no-case-declarations
           let list = CommandManager.listCommands();
           list = list.map(value => (CommandManager.isDisabled(value) ? '[D] ' : '[E] ') + value);
           console.log(list.join('\n'));
       }
     },
-    function (line) {
-      const getCommands = function () {
+    function (trie, remove) {
+      if (remove) {
+        trie.remove('command');
+        trie.remove('command list');
+
         const commands = CommandManager.listCommands();
-        const hits = commands.filter(value => value.startsWith(line.replace(args[0] + args[1]).trim()));
-        let arr = hits;
 
-        if (!hits.length) {
-          arr = commands;
-        }
-        return arr.map(value => `${args[0]} ${args[1]} ${value}`);
-      }
-      const args = splitargs(line);
-      if (args[0] !== 'command') {
-        if ('command'.startsWith(line)) {
-          return ['command'];
-        }
-        return null;
+        commands.forEach(value => {
+          trie.remove(`command disable ${value}`);
+          trie.remove(`command enable ${value}`);
+        });
+        return;
       }
 
-      switch (args[1]) {
-        case 'disable':
-          return getCommands();
-        case 'enable':
-          return getCommands();
-        case 'list':
-          return ['command list'];
-        default:
-          const subcommands = ['disable', 'enable', 'list'];
-          const filtered = subcommands.filter(value => value.startsWith(args[1]));
-          let arr = filtered;
-          if (!filtered.length) {
-            arr = subcommands;
-          }
+      trie.insert('command');
+      trie.insert('command list');
 
-          return arr.map(value => 'command ' + value);
-      }
+      const commands = CommandManager.listCommands();
+
+      commands.forEach(value => {
+        trie.insert(`command disable ${value}`);
+        trie.insert(`command enable ${value}`);
+      });
     })
 }

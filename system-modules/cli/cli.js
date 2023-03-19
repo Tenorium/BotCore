@@ -4,6 +4,7 @@ import Logger from '#util/log';
 import { run } from './default-commands.js';
 import ModuleManager from '#moduleManager';
 import * as TrieCompleter from 'readline-trie-completer';
+import splitargs from 'splitargs';
 
 const TrieCommonJS = TrieCompleter.default;
 
@@ -37,6 +38,7 @@ let isClosed = false;
  * @typedef CommandCompleter
  * @type function
  * @param {import('readline-trie-completer').default().trie} trie
+ * @param {boolean=false} remove
  */
 
 /**
@@ -94,9 +96,17 @@ export default class CliModule extends AbstractModule {
      * @type {AddCommandFunc}
      */
   addCommand (command, commandHandler, commandCompleter = null) {
-    const handlerIndex = handlers.push(commandHandler) - 1;
+    const handlerIndex = handlers.push(
+      function (input) {
+        const args = splitargs(input);
+        if (args[0] === command) {
+          commandHandler(input);
+        }
+      }
+    ) - 1;
     let completerIndex;
     if (commandCompleter) {
+      commandCompleter(trieCompleter.trie);
       completerIndex = completions.push(commandCompleter) - 1;
     }
 
@@ -114,6 +124,7 @@ export default class CliModule extends AbstractModule {
     if (!completerIndex) {
       return;
     }
+    completions[completerIndex](trieCompleter.trie, true);
     delete completions[completerIndex];
   }
 
