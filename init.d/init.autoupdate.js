@@ -16,7 +16,7 @@ const runMigration = async function (name) {
 const execMigrations = async function () {
     const migrations = readdirSync(migrationsPath, {withFileTypes: true})
         .filter(dirent => dirent.isFile())
-        .filter(dirent => dirent.name !== 'migrations.json' || dirent.name !== '.gitignore')
+        .filter(dirent => dirent.name !== 'migrations.json' && dirent.name !== '.gitignore')
         .map(dirent => dirent.name)
         .sort((a, b) => a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'}));
 
@@ -29,7 +29,7 @@ const execMigrations = async function () {
     }
 
     for (const migration of migrations) {
-        if (executedMigrations.contains(migration)) {
+        if (executedMigrations.includes(migration)) {
             continue;
         }
 
@@ -76,10 +76,14 @@ export default async function () {
     }
 
     await git.init()
+        .addConfig('user.name', 'BotCore update system')
+        .addConfig('user.email', 'update@example.com')
         .addRemote(REMOTE_NAME, updaterConfig.repo)
         .fetch(REMOTE_NAME)
-        .checkout(`${REMOTE_NAME}/${updaterConfig.branch}`, ['--force'])
-        .stash();
+        .stash()
+        .checkout(`${updaterConfig.branch}`, ['--force'])
+        .pull('update', 'master')
+        .raw('stash', 'pop');
 
     Logger.info('[AutoUpdate] Update finished');
 

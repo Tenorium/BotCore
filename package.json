@@ -1,6 +1,6 @@
 {
   "name": "botcore",
-  "version": "0.1.7-alpha",
+  "version": "0.1.8-alpha",
   "description": "",
   "main": "init.js",
   "type": "module",
