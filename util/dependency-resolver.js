@@ -14,6 +14,7 @@ const defaultDependencies = {
     i18n: '0.15.1',
     moment: '2.29.4',
     progress: '2.0.3',
+    'readline-trie-completer': '0.0.0',
     semver: '7.3.8',
     'sha256-file': '1.0.0',
     'simple-git': '3.14.1',

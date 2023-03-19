@@ -102,15 +102,24 @@ export default class Core {
      */
     registerClientEvent(type, handler, once = false) {
         const uuid = uuidv4();
+
+        const wrapper = function (...args) {
+            try {
+                return handler(...args);
+            } catch (e) {
+                Logger.error('Error in client event', e);
+            }
+        }
+
         this.#events[uuid] = {
             type,
-            handler
+            wrapper
         };
 
         if (once) {
-            this.#client.once(type, handler);
+            this.#client.once(type, wrapper);
         } else {
-            this.#client.on(type, handler);
+            this.#client.on(type, wrapper);
         }
 
         return uuid;
