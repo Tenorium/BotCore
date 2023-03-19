@@ -113,7 +113,7 @@ export default class Core {
 
         this.#events[uuid] = {
             type,
-            wrapper
+            handler: wrapper
         };
 
         if (once) {
