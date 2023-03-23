@@ -3,24 +3,22 @@ import { pathfinder } from 'mineflayer-pathfinder';
 import armorManager from 'mineflayer-armor-manager'
 
 export default class extends AbstractModule {
+  #playerCollectEventId;
   load () {
+    const core = app();
     /** @type {import('mineflayer').Bot} */
-    const bot = app().getClient();
+    const bot = core.getClient();
 
     bot.loadPlugin(armorManager);
     bot.loadPlugin(pathfinder);
 
-    bot.on('playerCollect', (collector, itemDrop) => {
+    this.#playerCollectEventId = core.registerClientEvent('playerCollect', (collector, itemDrop) => {
       if (collector !== bot.entity) return
 
       setTimeout(() => {
         const sword = bot.inventory.items().find(item => item.name.includes('sword'))
         if (sword) bot.equip(sword, 'hand')
       }, 150)
-    })
-
-    bot.on('playerCollect', (collector, itemDrop) => {
-      if (collector !== bot.entity) return
 
       setTimeout(() => {
         const shield = bot.inventory.items().find(item => item.name.includes('shield'))
@@ -30,6 +28,6 @@ export default class extends AbstractModule {
   }
 
   unload () {
-
+    app().unregisterClientEvent(this.#playerCollectEventId);
   }
 }

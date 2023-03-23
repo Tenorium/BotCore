@@ -3,28 +3,51 @@ import ModuleManager from '#moduleManager';
 import Logger from '#util/log';
 
 export default class Basic extends AbstractModule {
+  #messageEventId;
+  #chatEventId;
+  #kickedEventId;
   load () {
+    const core = app();
+
     /** @type {import('mineflayer').Bot} */
-    const bot = app().getClient();
+    const bot = core.getClient();
 
     /** @type {import('#system-module/cli').default} */
     const cli = ModuleManager.getModule('cli');
 
     cli.addCommand('chat', function (line) {
       bot.chat(line);
-    }, function (trie) {
+    }, function (trie, remove) {
+      if (remove) {
+        trie.remove('chat');
+        return;
+      }
       trie.insert('chat');
     })
 
-    bot.on('message', (jsonMsg, position) => {
+    this.#messageEventId = core.registerClientEvent('message', (jsonMsg, position) => {
       Logger.info(`[MESSAGE] ${jsonMsg.toString()}`);
-    })
+    });
 
-    bot.on('chat', (username, message, translate, jsonMsg, matches) => {
+    this.#chatEventId = core.registerClientEvent('chat', (username, message, translate, jsonMsg, matches) => {
       Logger.info(`[CHAT] ${username}: ${message}`);
-    })
-    bot.on('kicked', reason => {
+    });
+
+    this.#kickedEventId = core.registerClientEvent('kicked', reason => {
       Logger.warning(`Kicked by reason: ${reason}`);
     });
+  }
+
+  unload () {
+    const core = app();
+
+    /** @type {import('#system-module/cli').default} */
+    const cli = ModuleManager.getModule('cli');
+
+    cli.removeCommand('chat');
+
+    core.unregisterClientEvent(this.#messageEventId);
+    core.unregisterClientEvent(this.#chatEventId);
+    core.unregisterClientEvent(this.#kickedEventId);
   }
 }

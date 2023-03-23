@@ -44,7 +44,7 @@ export default class ModuleManager extends ClassLogger {
       const moduleSource = fs.readFileSync(path).toString('utf-8');
 
       this._debug('Parsing module source for get metadata');
-      const { tags } = parse(moduleSource)[0];
+      const { tags } = parse(moduleSource)[0] ?? { tags: [] };
 
       let dependencies = {};
 
@@ -120,17 +120,18 @@ export default class ModuleManager extends ClassLogger {
     return Object.keys(this.#modules);
   }
 
-  /**
-     *
-     * @param name
-     * @return {AbstractModule|null}
-     */
   static getModule (name) {
     return this.#modules[name]?.module ?? null;
   }
 
   static unloadAll () {
     this._info('Unloading all modules');
+    const userModules = this.listLoaded().filter(value => !['cli'].includes(value));
+    userModules.forEach((name) => {
+      this._debug(`Unloading module ${name}`);
+      this.unload(name);
+    });
+
     this.listLoaded().forEach((name) => {
       this._debug(`Unloading module ${name}`);
       this.unload(name);

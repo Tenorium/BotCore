@@ -100,7 +100,9 @@ export default class CliModule extends AbstractModule {
       function (input) {
         const args = splitargs(input);
         if (args[0] === command) {
+          ModuleManager.getModule('cli').pauseCli();
           commandHandler(input.substring(`${command} `.length));
+          ModuleManager.getModule('cli').resumeCli();
         }
       }
     ) - 1;
@@ -141,6 +143,14 @@ export default class CliModule extends AbstractModule {
       rl.resume();
     }
     // rl.prompt();
+  }
+
+  /**
+   *
+   * @return {import('readline-trie-completer').default().trie}
+   */
+  getCompleter () {
+    return trieCompleter.trie;
   }
 
   unload () {

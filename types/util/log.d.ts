@@ -1,8 +1,4 @@
 export default class Logger {
-    static "__#7@#config": {
-        debug: boolean;
-        dateformat: string;
-    };
     static setConfig(config_: any): void;
     /**
      * Print INFO log

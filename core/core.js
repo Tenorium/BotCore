@@ -104,10 +104,6 @@ export default class Core {
 
   /**
      * Register Discord Client event
-     * @param {string} type
-     * @param {function} handler
-     * @param {boolean} once
-     * @returns {*|string}
      */
   registerClientEvent (type, handler, once = false) {
     const uuid = uuidv4();
