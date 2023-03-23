@@ -100,7 +100,7 @@ export default class CliModule extends AbstractModule {
       function (input) {
         const args = splitargs(input);
         if (args[0] === command) {
-          commandHandler(input);
+          commandHandler(input.substring(`${command} `.length));
         }
       }
     ) - 1;

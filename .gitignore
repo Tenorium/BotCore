@@ -1,6 +1,4 @@
 /node_modules/
 /data/*
 !/data/index.js
-/modules/*
-!/modules/.gitkeep
 .idea/

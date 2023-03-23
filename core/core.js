@@ -1,10 +1,11 @@
 import ModuleManager from '#moduleManager';
-import { Client } from 'discord.js';
 import { v4 as uuidv4 } from 'uuid';
 import Logger from '#util/log';
 import CoreAlreadyInitializedError from './error/CoreAlreadyInitializedError.js';
 import EventNotFoundError from './error/EventNotFoundError.js';
 import wtfnode from 'wtfnode';
+import mineflayer from 'mineflayer';
+import AutoAuth from 'mineflayer-auto-auth';
 
 let core;
 
@@ -12,7 +13,7 @@ export default class Core {
   #events = {};
   #config;
 
-  /** @type {import('discord.js').Client} **/
+  /** @type {mineflayer.Bot} **/
   #client;
 
   #initialized = false;
@@ -60,9 +61,17 @@ export default class Core {
 
     Logger.debug('Core init started!');
 
-    this.#client = new Client(this.#config.client);
+    this.#client = mineflayer.createBot({
+      auth: 'offline',
+      version: this.#config.client.version,
+      host: this.#config.client.host,
+      port: this.#config.client.port,
+      username: this.#config.client.username,
+      plugins: [AutoAuth],
+      AutoAuth: this.#config.client.password
+    })
+
     ModuleManager.autoload();
-    this.#client.login(this.#config.token);
     this.#initialized = true;
   }
 
@@ -76,7 +85,7 @@ export default class Core {
 
   /**
      *
-     * @returns {Client}
+     * @returns {mineflayer.Bot}
      */
   getClient () {
     return this.#client;
@@ -86,7 +95,7 @@ export default class Core {
      * Destroy Discord client, unload all modules and exit
      */
   shutdown () {
-    this.#client.destroy();
+    this.#client.end('shutdown');
 
     wtfnode.init();
 

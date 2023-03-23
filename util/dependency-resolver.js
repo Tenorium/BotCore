@@ -10,8 +10,8 @@ const defaultDependencies = {
   axios: '1.1.3',
   colors: '1.4.0',
   'comment-parser': '1.3.1',
-  'discord.js': '13.6.0',
   i18n: '0.15.1',
+  mineflayer: '4.8.1',
   moment: '2.29.4',
   progress: '2.0.3',
   'readline-trie-completer': '0.0.0',
@@ -20,7 +20,8 @@ const defaultDependencies = {
   'simple-git': '3.14.1',
   splitargs: '0.0.7',
   uuid: '8.3.2',
-  wtfnode: '0.9.1'
+  wtfnode: '0.9.1',
+  yargs: '17.7.1'
 };
 
 const dependencyCache = await listInstalled();
