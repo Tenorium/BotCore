@@ -68,7 +68,8 @@ export default class Core {
       port: this.#config.client.port,
       username: this.#config.client.username,
       plugins: [AutoAuth],
-      AutoAuth: this.#config.client.password
+      AutoAuth: this.#config.client.password,
+      viewDistance: 'far'
     })
 
     ModuleManager.autoload();

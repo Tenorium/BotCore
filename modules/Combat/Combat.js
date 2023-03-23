@@ -5,6 +5,7 @@ import ModuleManager from '#moduleManager';
 
 export default class Combat extends AbstractModule {
   #entityHurtEventId;
+  #startedAttackingEventId;
   load () {
     const core = app();
 
@@ -22,6 +23,10 @@ export default class Combat extends AbstractModule {
         const attacker = bot.nearestEntity(nearestEntity => nearestEntity.kind === 'Hostile mobs' || nearestEntity.type === 'player');
         bot.pvp.attack(attacker);
       }
+    });
+
+    this.#startedAttackingEventId = core.registerClientEvent('startedAttacking', function () {
+      ModuleManager.getModule('DiscordNotify').send(`Начинает атаковать ${bot.pvp.target.displayName}`, '00ff00');
     });
 
     cli.addCommand('attack', function (line) {
@@ -42,7 +47,7 @@ export default class Combat extends AbstractModule {
       trie.insert('attack');
     });
 
-    cli.addCommand('stopattack', function (line) {
+    cli.addCommand('stopattack', function () {
       bot.pvp.stop();
     },
     function (trie, remove) {
@@ -56,6 +61,8 @@ export default class Combat extends AbstractModule {
 
   unload () {
     app().unregisterClientEvent(this.#entityHurtEventId);
+    app().unregisterClientEvent(this.#startedAttackingEventId);
+
     const cli = ModuleManager.getModule('cli');
     cli.removeCommand('attack');
     cli.removeCommand('stopattack');
