@@ -6,9 +6,12 @@ import { getDirectories } from '#util/utils';
 import ModuleEventEmitter from './event.js';
 import { parse } from 'comment-parser';
 import dependencyResolver from '#util/dependency-resolver';
+import ConfigManager from '#configManager';
+import { createRequire } from 'module';
 
 const USER_MODULES_DIR = new URL('../../modules', import.meta.url).pathname;
 const SYSTEM_MODULES_DIR = new URL('../../system-modules', import.meta.url).pathname;
+const require = createRequire(import.meta.url);
 
 export default class ModuleManager extends ClassLogger {
   static #modules = {};
@@ -17,8 +20,18 @@ export default class ModuleManager extends ClassLogger {
 
   static async autoload () {
     const modules = this.list();
+    let disabledModules = [];
+
+    const config = ConfigManager.readConfig('core', 'moduleManager');
+    if (config !== null) {
+      disabledModules = config.disabledModules;
+    }
 
     for (const module_ of modules) {
+      if (disabledModules.includes(module_)) {
+        this._debug(`Module ${module_} disabled, skipping.`);
+        continue;
+      }
       this._debug(`Loading module ${module_}`);
       await this.load(module_);
     }
@@ -58,7 +71,7 @@ export default class ModuleManager extends ClassLogger {
 
       this._debug('Dependencies installed');
 
-      const module_ = (await import(path)).default;
+      const module_ = (await import(`${path}?update=${Date.now()}`)).default;
       if (!(module_.prototype instanceof AbstractModule)) {
         throw new Error('Module not extends AbstractModule class');
       }
@@ -89,14 +102,14 @@ export default class ModuleManager extends ClassLogger {
      * @return {boolean}
      */
   static unload (name) {
-    if (!this.list().includes(name)) {
+    if (!this.listLoaded().includes(name)) {
       return true;
     }
 
-    const module = this.#modules[name];
+    const module_ = this.#modules[name];
     delete this.#modules[name];
 
-    module.module.unload();
+    module_.module.unload();
     this.getEventManager().emit('moduleUnloaded', name);
   }
 
@@ -136,6 +149,41 @@ export default class ModuleManager extends ClassLogger {
       this._debug(`Unloading module ${name}`);
       this.unload(name);
     });
+  }
+
+  static disable (name) {
+    let config = ConfigManager.readConfig('core', 'moduleManager');
+
+    if (config === null) {
+      config = {
+        disabledModules: []
+      }
+    }
+
+    if (!config.disabledModules.includes(name)) {
+      config.disabledModules.push(name);
+      ConfigManager.writeConfig('core', config, 'moduleManager');
+    }
+  }
+
+  static enable (name) {
+    let config = ConfigManager.readConfig('core', 'moduleManager');
+
+    if (config === null) {
+      config = {
+        disabledModules: []
+      }
+      return;
+    }
+
+    let index;
+
+    if ((index = config.disabledModules.indexOf(name)) !== -1) {
+      if (index !== -1) {
+        config.disabledModules.splice(index, 1);
+        ConfigManager.writeConfig('core', config, 'moduleManager');
+      }
+    }
   }
 
   static getEventManager () {

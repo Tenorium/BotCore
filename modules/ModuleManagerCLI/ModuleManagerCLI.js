@@ -41,15 +41,27 @@ export default class ModuleManagerCLI extends AbstractModule {
             if (!checkIfSecondArgExist()) break;
             ModuleManager.unload(args[1]);
             ModuleManager.load(args[1]);
+            break;
+          case 'disable':
+            if (!checkIfSecondArgExist()) break;
+            ModuleManager.disable(args[1]);
+            ModuleManager.unload(args[1]);
+            break;
+          case 'enable':
+            if (!checkIfSecondArgExist()) break;
+            ModuleManager.enable(args[1]);
+            ModuleManager.load(args[1]);
+            break;
         }
       },
       function (trie, remove) {
         if (remove) {
-          console.log();
           trie.remove('module load');
           trie.remove('module unload');
           trie.remove('module reload');
           trie.remove('module list');
+          trie.remove('module enable');
+          trie.remove('module disable');
           return;
         }
 
@@ -57,6 +69,8 @@ export default class ModuleManagerCLI extends AbstractModule {
         trie.insert('module unload');
         trie.insert('module reload');
         trie.insert('module list');
+        trie.insert('module enable');
+        trie.insert('module disable');
       })
   }
 

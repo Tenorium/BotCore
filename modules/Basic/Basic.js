@@ -4,7 +4,6 @@ import Logger from '#util/log';
 
 export default class Basic extends AbstractModule {
   #messageEventId;
-  #chatEventId;
   #kickedEventId;
   load () {
     const core = app();
@@ -25,12 +24,8 @@ export default class Basic extends AbstractModule {
       trie.insert('chat');
     })
 
-    this.#messageEventId = core.registerClientEvent('message', (jsonMsg, position) => {
+    this.#messageEventId = core.registerClientEvent('message', (jsonMsg) => {
       Logger.info(`[MESSAGE] ${jsonMsg.toString()}`);
-    });
-
-    this.#chatEventId = core.registerClientEvent('chat', (username, message, translate, jsonMsg, matches) => {
-      Logger.info(`[CHAT] ${username}: ${message}`);
     });
 
     this.#kickedEventId = core.registerClientEvent('kicked', reason => {
@@ -47,7 +42,6 @@ export default class Basic extends AbstractModule {
     cli.removeCommand('chat');
 
     core.unregisterClientEvent(this.#messageEventId);
-    core.unregisterClientEvent(this.#chatEventId);
     core.unregisterClientEvent(this.#kickedEventId);
   }
 }
