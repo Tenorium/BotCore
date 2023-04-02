@@ -5,6 +5,8 @@ import Logger from '#util/log';
 export default class Basic extends AbstractModule {
   #messageEventId;
   #kickedEventId;
+  #errorEventId;
+  #tickTimer;
   load () {
     const core = app();
 
@@ -13,6 +15,10 @@ export default class Basic extends AbstractModule {
 
     /** @type {import('#system-module/cli').default} */
     const cli = ModuleManager.getModule('cli');
+
+    this.#tickTimer = setInterval(() => {
+      app().getClient().emit('tick');
+    }, 50);
 
     cli.addCommand('chat', function (line) {
       bot.chat(line);
@@ -31,6 +37,9 @@ export default class Basic extends AbstractModule {
     this.#kickedEventId = core.registerClientEvent('kicked', reason => {
       Logger.warning(`Kicked by reason: ${reason}`);
     });
+    this.#errorEventId = core.registerClientEvent('error', error => {
+      Logger.error('Error', error);
+    })
   }
 
   unload () {
@@ -43,5 +52,7 @@ export default class Basic extends AbstractModule {
 
     core.unregisterClientEvent(this.#messageEventId);
     core.unregisterClientEvent(this.#kickedEventId);
+
+    clearInterval(this.#tickTimer);
   }
 }

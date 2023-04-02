@@ -1,6 +1,7 @@
 import AbstractModule from '#abstractModule';
 import { pathfinder } from 'mineflayer-pathfinder';
-import armorManager from 'mineflayer-armor-manager'
+import armorManager from 'mineflayer-armor-manager';
+import { plugin as autoeat } from 'mineflayer-auto-eat';
 
 export default class extends AbstractModule {
   #playerCollectEventId;
@@ -11,19 +12,23 @@ export default class extends AbstractModule {
 
     bot.loadPlugin(armorManager);
     bot.loadPlugin(pathfinder);
+    bot.loadPlugin(autoeat);
 
     this.#playerCollectEventId = core.registerClientEvent('playerCollect', (collector, itemDrop) => {
       if (collector !== bot.entity) return
 
-      setTimeout(() => {
-        const sword = bot.inventory.items().find(item => item.name.includes('sword'))
-        if (sword) bot.equip(sword, 'hand')
-      }, 150)
+      const sword = bot.inventory.items().find(item => item.name.includes('sword'))
+      if (sword) bot.equip(sword, 'hand');
 
-      setTimeout(() => {
-        const shield = bot.inventory.items().find(item => item.name.includes('shield'))
-        if (shield) bot.equip(shield, 'off-hand')
-      }, 250)
+      const shield = bot.inventory.items().find(item => item.name.includes('totem_of_undying'))
+      if (shield) bot.equip(shield, 'off-hand')
+    })
+
+    bot.on('health', () => {
+      if (bot.health <= 10) {
+        bot.food = 0;
+        bot.autoEat.eat().then(() => {}).catch(() => {});
+      }
     })
   }
 

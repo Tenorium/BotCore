@@ -7,11 +7,9 @@ import ModuleEventEmitter from './event.js';
 import { parse } from 'comment-parser';
 import dependencyResolver from '#util/dependency-resolver';
 import ConfigManager from '#configManager';
-import { createRequire } from 'module';
 
 const USER_MODULES_DIR = new URL('../../modules', import.meta.url).pathname;
 const SYSTEM_MODULES_DIR = new URL('../../system-modules', import.meta.url).pathname;
-const require = createRequire(import.meta.url);
 
 export default class ModuleManager extends ClassLogger {
   static #modules = {};

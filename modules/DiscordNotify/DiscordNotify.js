@@ -26,6 +26,6 @@ export default class DiscordNotify extends AbstractModule {
     }),
     {
       headers: { 'Content-Type': 'application/json' }
-    })
+    }).then(() => {}).catch(() => {});
   }
 }

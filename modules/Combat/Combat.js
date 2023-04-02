@@ -2,9 +2,28 @@ import AbstractModule from '#abstractModule';
 import { pathfinder } from 'mineflayer-pathfinder';
 import { plugin as pvp } from 'mineflayer-pvp';
 import ModuleManager from '#moduleManager';
+import bloodhound from 'mineflayer-bloodhound';
+import Logger from '#util/log';
+import mineflayer from 'mineflayer';
+import ArrowTracker from './arrowTracker.js';
+import TargetManager from './targetManager.js';
+import hawkEyePlugin from 'minecrafthawkeye';
+
+const bloodHoundPlugin = bloodhound(mineflayer);
+
+const calculateDirection = function (pitch, yaw) {
+  const pitchRadians = pitch * Math.PI / 180;
+  const yawRadians = yaw * Math.PI / 180;
+  const xzLength = Math.cos(pitchRadians);
+  const x = xzLength * Math.sin(yawRadians);
+  const y = -Math.sin(pitchRadians);
+  const z = xzLength * Math.cos(yawRadians);
+  return new Vec3(x, y, z);
+}
 
 export default class Combat extends AbstractModule {
-  #entityHurtEventId;
+  #combatEventListener;
+  #correlateAttackEventId;
   #startedAttackingEventId;
   load () {
     const core = app();
@@ -17,16 +36,85 @@ export default class Combat extends AbstractModule {
 
     bot.loadPlugin(pathfinder);
     bot.loadPlugin(pvp);
+    bot.loadPlugin(bloodHoundPlugin)
+    bot.loadPlugin(hawkEyePlugin.default);
 
-    this.#entityHurtEventId = core.registerClientEvent('entityHurt', entity => {
-      if (entity === bot.entity) {
-        const attacker = bot.nearestEntity(nearestEntity => nearestEntity.kind === 'Hostile mobs' || nearestEntity.type === 'player');
-        bot.pvp.attack(attacker);
+    bot.bloodhound.yaw_correlation_enabled = true;
+
+    this.#combatEventListener = (packet) => {
+      let attacker;
+      if (packet.event === 1 && (attacker = bot.entities[packet.entityId])) {
+        const notificationText = `Бота атаковал ${attacker.type === 'player' ? `игрок **${attacker.username}**` : attacker.displayName}`;
+
+        Logger.info(notificationText);
+        ModuleManager.getModule('DiscordNotify').send(notificationText, 'ffff00');
+        ModuleManager.getModule('Combat').attack(bot.entities[packet.entityId])
+      }
+    };
+    bot._client.on('combat_event', this.#combatEventListener);
+
+    bot.on('entitySpawn', (arrowEntity) => {
+      if (arrowEntity.objectType === 'Shot arrow') {
+        ArrowTracker.addArrow(arrowEntity);
+      }
+    });
+
+    bot.on('tick', () => {
+      this.attack(bot.nearestEntity(entity => (
+        entity.kind === 'Hostile mobs' && bot.entity.position.distanceTo(entity.position) < 10
+      )));
+
+      const nextTarget = TargetManager.getNextTarget();
+      const hasArrows = function () {
+        const arrows = bot.inventory.items().filter(item => item.name === 'arrow');
+        return arrows.length > 0;
+      }
+
+      if (!nextTarget) {
+        return;
+      }
+
+      if (
+        nextTarget.position.distanceTo(bot.entity.position) > 10 &&
+        hasArrows()
+      ) {
+        bot.hawkEye.oneShot(nextTarget, 'bow');
+        return;
+      }
+
+      bot.pvp.attack(nextTarget);
+    });
+
+    bot.on('entityDead', entity => {
+      TargetManager.removeTarget(entity);
+    })
+
+    this.#correlateAttackEventId = core.registerClientEvent('onCorrelateAttack', function (attacker, victim, weapon) {
+      const combat = ModuleManager.getModule('Combat');
+      const webhook = ModuleManager.getModule('DiscordNotify');
+
+      if (victim === bot.entity) {
+        const notificationText = `Бота атаковал ${attacker.type === 'player' ? `игрок **${attacker.username}**` : attacker.displayName}`;
+
+        Logger.info(notificationText);
+        webhook.send(notificationText, 'ffff00');
+
+        combat.attack(attacker);
+        return;
+      }
+
+      if (combat.checkFriend(victim) && !combat.checkFriend(attacker)) {
+        const notificationText = `Друга ${victim.player.username} атаковал ${attacker.type === 'player' ? `игрок **${attacker.player.username}**` : attacker.displayName}`;
+
+        Logger.info(notificationText);
+        webhook.send(notificationText, 'ffff00');
+
+        combat.attack(attacker);
       }
     });
 
     this.#startedAttackingEventId = core.registerClientEvent('startedAttacking', function () {
-      ModuleManager.getModule('DiscordNotify').send(`Начинает атаковать ${bot.pvp.target.displayName}`, '00ff00');
+      ModuleManager.getModule('DiscordNotify').send(`Начинает атаковать ${bot.pvp.target.username ?? bot.pvp.target.name}`, '00ff00');
     });
 
     cli.addCommand('attack', function (line) {
@@ -60,11 +148,22 @@ export default class Combat extends AbstractModule {
   }
 
   unload () {
-    app().unregisterClientEvent(this.#entityHurtEventId);
-    app().unregisterClientEvent(this.#startedAttackingEventId);
+    const core = app();
+
+    core.unregisterClientEvent(this.#startedAttackingEventId);
+    core.unregisterClientEvent(this.#correlateAttackEventId);
+    core.getClient()._client.off('combat_event', this.#combatEventListener);
 
     const cli = ModuleManager.getModule('cli');
     cli.removeCommand('attack');
     cli.removeCommand('stopattack');
+  }
+
+  checkFriend (entity) {
+
+  }
+
+  attack (entity) {
+    TargetManager.addTarget(entity);
   }
 }

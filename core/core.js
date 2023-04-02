@@ -17,12 +17,13 @@ export default class Core {
   #client;
 
   #initialized = false;
+  #shutdown = false;
 
   /**
-     *
-     * @param config
-     * @return {Core}
-     */
+   *
+   * @param config
+   * @return {Core}
+   */
   constructor (config) {
     if (core) {
       return core;
@@ -33,27 +34,27 @@ export default class Core {
     core = this;
 
     /**
-         * @param {string|undefined} name
-         * @return {Core|*}
-         */
+     * @param {string|undefined} name
+     * @return {Core|*}
+     */
     global.app = function (name = undefined) {
       if (name === undefined) {
         return Core.getCore();
       }
-    }
+    };
   }
 
   /**
-     * Core instance getter
-     * @returns {Core}
-     */
+   * Core instance getter
+   * @returns {Core}
+   */
   static getCore () {
     return core;
   }
 
   /**
-     * Core initialization function
-     */
+   * Core initialization function
+   */
   init () {
     if (this.#initialized) {
       throw new CoreAlreadyInitializedError();
@@ -70,32 +71,55 @@ export default class Core {
       plugins: [AutoAuth],
       AutoAuth: this.#config.client.password,
       viewDistance: 'far'
-    })
+    });
+
+    this.getClient().on('end', (reason) => {
+      if (this.#shutdown) {
+        return;
+      }
+
+      Logger.info('Bot disconnected, reloading all modules...');
+      ModuleManager.unloadAll();
+
+      this.#client = mineflayer.createBot({
+        auth: 'offline',
+        version: this.#config.client.version,
+        host: this.#config.client.host,
+        port: this.#config.client.port,
+        username: this.#config.client.username,
+        plugins: [AutoAuth],
+        AutoAuth: this.#config.client.password,
+        viewDistance: 'far'
+      });
+
+      ModuleManager.autoload();
+    });
 
     ModuleManager.autoload();
     this.#initialized = true;
   }
 
   /**
-     * Config getter
-     * @returns {*}
-     */
+   * Config getter
+   * @returns {*}
+   */
   getConfig () {
     return this.#config;
   }
 
   /**
-     *
-     * @returns {mineflayer.Bot}
-     */
+   *
+   * @returns {mineflayer.Bot}
+   */
   getClient () {
     return this.#client;
   }
 
   /**
-     * Destroy Discord client, unload all modules and exit
-     */
+   * Destroy Discord client, unload all modules and exit
+   */
   shutdown () {
+    this.#shutdown = true;
     this.#client.end('shutdown');
 
     wtfnode.init();
@@ -104,8 +128,8 @@ export default class Core {
   }
 
   /**
-     * Register Discord Client event
-     */
+   * Register Discord Client event
+   */
   registerClientEvent (type, handler, once = false) {
     const uuid = uuidv4();
 
@@ -115,7 +139,7 @@ export default class Core {
       } catch (e) {
         Logger.error('Error in client event', e);
       }
-    }
+    };
 
     this.#events[uuid] = {
       type,
@@ -132,9 +156,9 @@ export default class Core {
   }
 
   /**
-     * Unsubscribe Discord Client event
-     * @param {string} uuid
-     */
+   * Unsubscribe Discord Client event
+   * @param {string} uuid
+   */
   unregisterClientEvent (uuid) {
     const event = this.#events[uuid] ?? null;
     if (!event) {
