@@ -27,87 +27,89 @@ export default class Friend extends AbstractModule {
       ConfigManager.writeConfig('friend', config);
     }
 
-    cli.addCommand(
-      'friend',
-      function (line) {
-        const args = splitargs(line);
+    if (cli) {
+      cli.addCommand(
+        'friend',
+        function (line) {
+          const args = splitargs(line);
 
-        /** @type {Friend} */
-        const module = ModuleManager.getModule('Friend');
+          /** @type {Friend} */
+          const module = ModuleManager.getModule('Friend');
 
-        switch (args[0]) {
-          case 'add':
-            if (!checkIfSecondArgExist(args)) break;
-            module.addFriend(args[1]);
-            break;
-          case 'remove':
-            if (!checkIfSecondArgExist(args)) break;
-            module.removeFriend(args[1]);
-            break;
-          case 'list':
-            if (!checkIfSecondArgExist(args)) break;
-            console.log(module.getFriendList().join('\n'));
-            break;
+          switch (args[0]) {
+            case 'add':
+              if (!checkIfSecondArgExist(args)) break;
+              module.addFriend(args[1]);
+              break;
+            case 'remove':
+              if (!checkIfSecondArgExist(args)) break;
+              module.removeFriend(args[1]);
+              break;
+            case 'list':
+              if (!checkIfSecondArgExist(args)) break;
+              console.log(module.getFriendList().join('\n'));
+              break;
+          }
+        },
+        function (trie, remove) {
+          if (remove) {
+            trie.remove('friend add');
+            trie.remove('friend remove');
+            trie.remove('friend list');
+
+            trie.remove('enemy add');
+            trie.remove('enemy remove');
+            trie.remove('enemy list');
+            return;
+          }
+
+          trie.insert('friend add');
+          trie.insert('friend remove');
+          trie.insert('friend list');
+
+          trie.insert('enemy add');
+          trie.insert('enemy remove');
+          trie.insert('enemy list');
         }
-      },
-      function (trie, remove) {
-        if (remove) {
-          trie.remove('friend add');
-          trie.remove('friend remove');
-          trie.remove('friend list');
+      );
 
-          trie.remove('enemy add');
-          trie.remove('enemy remove');
-          trie.remove('enemy list');
-          return;
+      cli.addCommand(
+        'enemy',
+        function (line) {
+          const args = splitargs(line);
+
+          /** @type {Friend} */
+          const module = ModuleManager.getModule('Friend');
+
+          switch (args[0]) {
+            case 'add':
+              if (!checkIfSecondArgExist(args)) break;
+              module.addEnemy(args[1]);
+              break;
+            case 'remove':
+              if (!checkIfSecondArgExist(args)) break;
+              module.removeEnemy(args[1]);
+              break;
+            case 'list':
+              if (!checkIfSecondArgExist(args)) break;
+              console.log(module.getEnemyList().join('\n'));
+              break;
+          }
+        },
+        function (trie, remove) {
+          if (remove) {
+            trie.remove('enemy add');
+            trie.remove('enemy remove');
+            trie.remove('enemy list');
+            return;
+          }
+
+          trie.insert('enemy add');
+          trie.insert('enemy remove');
+          trie.insert('enemy list');
         }
-
-        trie.insert('friend add');
-        trie.insert('friend remove');
-        trie.insert('friend list');
-
-        trie.insert('enemy add');
-        trie.insert('enemy remove');
-        trie.insert('enemy list');
-      }
-    );
-
-    cli.addCommand(
-      'enemy',
-      function (line) {
-        const args = splitargs(line);
-
-        /** @type {Friend} */
-        const module = ModuleManager.getModule('Friend');
-
-        switch (args[0]) {
-          case 'add':
-            if (!checkIfSecondArgExist(args)) break;
-            module.addEnemy(args[1]);
-            break;
-          case 'remove':
-            if (!checkIfSecondArgExist(args)) break;
-            module.removeEnemy(args[1]);
-            break;
-          case 'list':
-            if (!checkIfSecondArgExist(args)) break;
-            console.log(module.getEnemyList().join('\n'));
-            break;
-        }
-      },
-      function (trie, remove) {
-        if (remove) {
-          trie.remove('enemy add');
-          trie.remove('enemy remove');
-          trie.remove('enemy list');
-          return;
-        }
-
-        trie.insert('enemy add');
-        trie.insert('enemy remove');
-        trie.insert('enemy list');
-      }
-    )
+      );
+    }
   }
 
   unload () {

@@ -6,6 +6,12 @@ export default class ModuleManagerCLI extends AbstractModule {
   #completer;
 
   load () {
+    const cli = ModuleManager.getModule('cli');
+
+    if (!cli) {
+      return;
+    }
+
     ModuleManager.getModule('cli').addCommand(
       'module',
       function (line) {
@@ -75,6 +81,12 @@ export default class ModuleManagerCLI extends AbstractModule {
   }
 
   unload () {
+    const cli = ModuleManager.getModule('cli');
+
+    if (!cli) {
+      return;
+    }
+
     ModuleManager.getModule('cli').removeCommand('module');
   }
 }

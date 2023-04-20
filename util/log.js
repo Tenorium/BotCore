@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { Message, Client } from '#util/midprocess';
 
 export default class Logger {
   static #config = {
@@ -66,6 +67,19 @@ export default class Logger {
 
   static #printLog (message, level) {
     const date = moment().format(this.#config?.dateformat)
+    if (args.worker) {
+      Client.sendMessage(new Message(
+        'log',
+        {
+          date,
+          message,
+          level
+        },
+        {
+          name: args.username
+        }));
+      return;
+    }
     console.log(`[${date}] [${level.toUpperCase()}] ${message}`);
   }
 }

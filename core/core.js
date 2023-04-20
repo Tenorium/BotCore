@@ -6,6 +6,8 @@ import EventNotFoundError from './error/EventNotFoundError.js';
 import wtfnode from 'wtfnode';
 import mineflayer from 'mineflayer';
 import AutoAuth from 'mineflayer-auto-auth';
+import { ClientManager, Message } from '#util/midprocess';
+import { sleep } from '#util/utils';
 
 let core;
 
@@ -60,8 +62,6 @@ export default class Core {
       throw new CoreAlreadyInitializedError();
     }
 
-    Logger.debug('Core init started!');
-
     this.#client = mineflayer.createBot({
       auth: 'offline',
       version: this.#config.client.version,
@@ -97,6 +97,11 @@ export default class Core {
 
     ModuleManager.autoload();
     this.#initialized = true;
+
+    if (!args.worker && args['worker-count'] > 1) {
+      // while (Object.keys(ClientManager.getClients()).length < (args['worker-count'] - 1)) { ClientManager.startClient(); }
+      ClientManager.startClient();
+    }
   }
 
   /**
@@ -120,11 +125,20 @@ export default class Core {
    */
   shutdown () {
     this.#shutdown = true;
-    this.#client.end('shutdown');
+    this.#client.quit();
 
     wtfnode.init();
 
     ModuleManager.unloadAll();
+
+    if (!args.worker && args['worker-count'] > 1) {
+      ClientManager.sendMessage(new Message('shutdown', {}, {}));
+    } else {
+      (async () => {
+        await sleep(1000);
+        process.exit(0);
+      })()
+    }
   }
 
   /**

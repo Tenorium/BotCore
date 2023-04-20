@@ -1,6 +1,7 @@
 import AbstractModule from '#abstractModule';
 import ModuleManager from '#moduleManager';
 import Logger from '#util/log';
+import { Client } from '#util/midprocess';
 
 export default class Basic extends AbstractModule {
   #messageEventId;
@@ -9,6 +10,13 @@ export default class Basic extends AbstractModule {
   #tickTimer;
   load () {
     const core = app();
+
+    if (args.worker) {
+      Client.init();
+      Client.getEventEmitter().on('shutdown', args => {
+        core.shutdown();
+      })
+    }
 
     /** @type {import('mineflayer').Bot} */
     const bot = core.getClient();
@@ -20,15 +28,17 @@ export default class Basic extends AbstractModule {
       app().getClient().emit('tick');
     }, 50);
 
-    cli.addCommand('chat', function (line) {
-      bot.chat(line);
-    }, function (trie, remove) {
-      if (remove) {
-        trie.remove('chat');
-        return;
-      }
-      trie.insert('chat');
-    })
+    if (cli) {
+      cli.addCommand('chat', function (line) {
+        bot.chat(line);
+      }, function (trie, remove) {
+        if (remove) {
+          trie.remove('chat');
+          return;
+        }
+        trie.insert('chat');
+      })
+    }
 
     this.#messageEventId = core.registerClientEvent('message', (jsonMsg) => {
       Logger.info(`[MESSAGE] ${jsonMsg.toString()}`);
@@ -48,7 +58,9 @@ export default class Basic extends AbstractModule {
     /** @type {import('#system-module/cli').default} */
     const cli = ModuleManager.getModule('cli');
 
-    cli.removeCommand('chat');
+    if (cli) {
+      cli.removeCommand('chat');
+    }
 
     core.unregisterClientEvent(this.#messageEventId);
     core.unregisterClientEvent(this.#kickedEventId);

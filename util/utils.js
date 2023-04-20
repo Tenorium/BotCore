@@ -86,3 +86,7 @@ export function getNearestEntity (entities, targetEntity) {
 
   return entities.find((entity) => targetEntity.position.distanceTo(entity.position) === minDistance);
 }
+
+export function sleep (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

@@ -5,12 +5,15 @@ import initCore from './init.d/init.core.js'
 import autoUpdate from './init.d/init.autoupdate.js'
 import fs from 'fs'
 import * as util from 'util'
+import { Message, Client } from '#util/midprocess';
 
 /**
  * @global
  * @type {string}
  */
 global.basePath = dirname(new URL('', import.meta.url).pathname)
+
+const logFile = fs.createWriteStream(path.join(global.basePath, 'log.txt'), { flags: 'a' });
 
 const config = await getConfig()
 
@@ -29,15 +32,32 @@ colors.setTheme({
   error: 'red'
 })
 
-const logFile = fs.createWriteStream(path.join(global.basePath, 'log.txt'), { flags: 'a' })
+if (args.worker) {
+  console.log = function () {
+    let message = ''
+    for (let i = 0; i < arguments.length; i++) {
+      message += util.format(arguments[i]) + ' '
+    }
 
-console.log = function () {
-  let message = ''
-  for (let i = 0; i < arguments.length; i++) {
-    message += util.format(arguments[i]) + ' '
+    Client.sendMessage(new Message(
+      'raw',
+      {
+        message
+      },
+      {
+        name: args.username
+      }
+    ))
+  };
+} else {
+  console.log = function () {
+    let message = ''
+    for (let i = 0; i < arguments.length; i++) {
+      message += util.format(arguments[i]) + ' '
+    }
+    process.stdout.write(message.trim() + '\n')
+    logFile.write(message.trim() + '\n')
   }
-  process.stdout.write(message.trim() + '\n')
-  logFile.write(message.trim() + '\n')
 }
 
 await initCore(config)

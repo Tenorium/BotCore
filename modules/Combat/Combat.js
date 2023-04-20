@@ -93,6 +93,10 @@ export default class Combat extends AbstractModule {
       const combat = ModuleManager.getModule('Combat');
       const webhook = ModuleManager.getModule('DiscordNotify');
 
+      if (!bot.loggedIn) {
+        return;
+      }
+
       if (victim === bot.entity) {
         const notificationText = `Бота атаковал ${attacker.type === 'player' ? `игрок **${attacker.username}**` : attacker.displayName}`;
 
@@ -117,34 +121,36 @@ export default class Combat extends AbstractModule {
       ModuleManager.getModule('DiscordNotify').send(`Начинает атаковать ${bot.pvp.target.username ?? bot.pvp.target.name}`, '00ff00');
     });
 
-    cli.addCommand('attack', function (line) {
-      if (!bot.players[line]) {
-        console.log('I can\'t see player');
-        return;
-      }
+    if (cli) {
+      cli.addCommand('attack', function (line) {
+        if (!bot.players[line]) {
+          console.log('I can\'t see player');
+          return;
+        }
 
-      bot.pvp.attackRange = 6;
+        bot.pvp.attackRange = 6;
 
-      bot.pvp.attack(bot.players[line].entity);
-    },
-    function (trie, remove) {
-      if (remove) {
-        trie.remove('attack');
-        return;
-      }
-      trie.insert('attack');
-    });
+        bot.pvp.attack(bot.players[line].entity);
+      },
+      function (trie, remove) {
+        if (remove) {
+          trie.remove('attack');
+          return;
+        }
+        trie.insert('attack');
+      });
 
-    cli.addCommand('stopattack', function () {
-      bot.pvp.stop();
-    },
-    function (trie, remove) {
-      if (remove) {
-        trie.remove('stopattack');
-        return;
-      }
-      trie.insert('stopattack')
-    });
+      cli.addCommand('stopattack', function () {
+        bot.pvp.stop();
+      },
+      function (trie, remove) {
+        if (remove) {
+          trie.remove('stopattack');
+          return;
+        }
+        trie.insert('stopattack')
+      });
+    }
   }
 
   unload () {
@@ -155,15 +161,33 @@ export default class Combat extends AbstractModule {
     core.getClient()._client.off('combat_event', this.#combatEventListener);
 
     const cli = ModuleManager.getModule('cli');
-    cli.removeCommand('attack');
-    cli.removeCommand('stopattack');
+    if (cli) {
+      cli.removeCommand('attack');
+      cli.removeCommand('stopattack');
+    }
   }
 
   checkFriend (entity) {
+    if (!entity || entity.type !== 'player') {
+      return false;
+    }
 
+    const friendModule = ModuleManager.getModule('Friend');
+
+    if (!friendModule) {
+      return false;
+    }
+
+    return friendModule.getFriendList().includes(entity.username);
   }
 
   attack (entity) {
-    TargetManager.addTarget(entity);
+    if (!entity) {
+      return;
+    }
+
+    if (!this.checkFriend()) {
+      TargetManager.addTarget(entity);
+    }
   }
 }
