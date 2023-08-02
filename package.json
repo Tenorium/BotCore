@@ -2,11 +2,11 @@
   "name": "botcore",
   "version": "0.1.8-alpha",
   "description": "",
-  "main": "init.js",
+  "main": "build/init.js",
   "type": "module",
-  "types": "types/",
+  "types": "build/init.d.ts",
   "scripts": {
-    "bot": "node init.d/init.checkRequirements.js && node init.js"
+    "bot": "node build/init.d/init.checkRequirements.js && node build/init.js"
   },
   "engines": {
     "node": ">=18.10.0"
@@ -28,21 +28,12 @@
     "sha256-file": "^1.0.0",
     "simple-git": "^3.14.1",
     "splitargs": "^0.0.7",
+    "utilslib": "gitlab:tenorium/nodejs/utilslib",
     "uuid": "^8.3.2",
     "wtfnode": "^0.9.1"
   },
-  "imports": {
-    "#abstractModule": "./core/abstractModule.js",
-    "#configManager": "./data/index.js",
-    "#core": "./core/core.js",
-    "#commandManager": "./core/CommandManager/index.js",
-    "#moduleManager": "./core/ModuleManager/index.js",
-    "#system-module/cli": "./system-modules/cli/cli.js",
-    "#system-module/help": "./system-modules/help/help.js",
-    "#system-module/pkg": "./system-modules/pkg/pkg.js",
-    "#util/*": "./util/*.js"
-  },
   "devDependencies": {
+    "@types/i18n": "^0.13.6",
     "@types/semver": "^7.3.13",
     "@typescript-eslint/eslint-plugin": "^5.47.0",
     "eslint": "^8.30.0",
