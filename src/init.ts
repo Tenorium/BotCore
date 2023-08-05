@@ -5,12 +5,11 @@ import initCore from './init.d/init.core.js'
 import autoUpdate from './init.d/init.autoupdate.js'
 import fs from 'fs'
 import * as util from 'util'
+import serviceLocator from './init.d/init.sl.js'
 
-/**
- * @global
- * @type {string}
- */
 global.basePath = dirname(new URL('', import.meta.url).pathname)
+
+serviceLocator()
 
 const config = await getConfig()
 
@@ -41,3 +40,9 @@ console.log = function () {
 }
 
 await initCore(config)
+
+// DECLARATION
+
+declare global {
+  var basePath: string
+}
