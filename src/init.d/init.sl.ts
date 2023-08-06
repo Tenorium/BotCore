@@ -1,4 +1,4 @@
-import ConfigManager from '../data/index.js'
+import ConfigManager from '../util/configManager.js'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class ServiceLocator {

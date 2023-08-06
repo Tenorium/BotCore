@@ -1,12 +1,14 @@
 import readline from 'readline/promises'
 import { DataObject, LoggerConfig } from 'utilslib'
 
-export default async function (): Promise<DataObject | null> {
+export default async function (): Promise<CoreConfig> {
   const configManager = app('ConfigManager')
 
-  let config = configManager.readConfig('core')
+  const configData = configManager.readConfig('core')?.getData() as CoreConfigDataType ?? undefined
 
-  if (config === null) {
+  let config = new CoreConfig(configData)
+
+  if (configData === null) {
     console.log('Config not exist.')
     console.log('Starting configuration wizard...')
 
@@ -35,20 +37,14 @@ export default async function (): Promise<DataObject | null> {
 
     console.log('Config saved.')
     console.log('For apply selected language restart bot.')
-    config = configManager.readConfig('core')
+    return defaultConfig
   }
 
   return config
 }
 
 export class CoreConfig extends DataObject {
-  constructor (data: {
-    logger: LoggerConfig
-    client: ClientConfig
-    locale: string
-    token: string
-    prefix: string
-  } = {
+  constructor (data: CoreConfigDataType = {
     logger: new LoggerConfig(),
     client: new ClientConfig(),
     locale: 'en',
@@ -111,4 +107,13 @@ export class ClientConfig extends DataObject {
   setIntents (intents: number[]): void {
     this.setField('intents', intents)
   }
+}
+
+// DECLARATIONS
+declare interface CoreConfigDataType {
+  logger: LoggerConfig
+  client: ClientConfig
+  locale: string
+  token: string
+  prefix: string
 }
