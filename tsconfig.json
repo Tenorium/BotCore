@@ -11,7 +11,8 @@
     "esModuleInterop": true,
     "resolveJsonModule": false,
     "moduleResolution": "Node",
-    "declaration": true
+    "declaration": true,
+    "newLine": "crlf"
   },
   "include": [
     "src/**/*"
