@@ -30,8 +30,8 @@ class CommandManager extends EventEmitterWrapper<CommandManagerEvents> {
     super()
 
     app('Core').registerClientEvent('messageCreate', function (message: Message) {
-      const prefix = app('Core').getConfig().prefix
-      if (
+      const prefix = app('Core').getConfig()?.getPrefix()
+      if (prefix === undefined ||
         !(message.content.startsWith(prefix) ||
               MessageMentions.USERS_PATTERN.test(message.content))
       ) {
@@ -201,8 +201,8 @@ const disabledCommandHandler = function (command: string, message: Message): voi
     embeds: [
       {
         author: {
-          name: client.user.name,
-          iconURL: client.user.avatarURL()
+          name: client.user?.username ?? undefined,
+          iconURL: client.user?.avatarURL() ?? undefined
         },
         color: 'GOLD',
         title: i18n.__('disabled_title'),
@@ -221,8 +221,8 @@ const errorCommandHandler = function (command: string, message: Message, e: Erro
     embeds: [
       {
         author: {
-          name: client.user.name,
-          iconURL: client.user.avatarURL()
+          name: client.user?.username ?? undefined,
+          iconURL: client.user?.avatarURL() ?? undefined
         },
         color: 'RED',
         title: i18n.__('error_title'),

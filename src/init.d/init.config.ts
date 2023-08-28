@@ -6,7 +6,7 @@ export default async function (): Promise<CoreConfig> {
 
   const configData = configManager.readConfig('core')?.getData() as CoreConfigDataType ?? undefined
 
-  let config = new CoreConfig(configData)
+  const config = new CoreConfig(configData)
 
   if (configData === null) {
     console.log('Config not exist.')

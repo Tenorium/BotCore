@@ -1,0 +1,225 @@
+import { join } from 'path'
+import { existsSync } from 'fs'
+import AbstractModule from './abstractModule.js'
+import { classLogger, DataObject, EventEmitterWrapper, EventsList, getDirectories } from 'utilslib'
+
+const USER_MODULES_DIR = new URL('../../modules', import.meta.url).pathname
+const SYSTEM_MODULES_DIR = new URL('../../system-modules', import.meta.url).pathname
+
+class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
+  #modules: Record<string, { path: string, module: AbstractModule }> = {}
+  static _className = 'ModuleManager'
+  async autoload (): Promise<void> {
+    const ConfigManager = app('ConfigManager')
+    const modules = this.list()
+    let disabledModules = []
+
+    const config = ConfigManager.readConfig('core', 'moduleManager')
+    if (config !== null) {
+      disabledModules = config.getField('disabledModules')
+    }
+
+    for (const module_ of modules) {
+      if (disabledModules.includes(module_) === true) {
+        ModuleManager._debug(`Module ${module_} is disabled, skipping.`)
+        continue
+      }
+      ModuleManager._debug(`Loading module ${module_}`)
+      await this.load(module_)
+    }
+
+    this.emit('autoLoadFinished')
+  }
+
+  /**
+     *
+     * @param {string} name
+     */
+  async load (name: string): Promise<boolean> {
+    if (Object.keys(this.#modules).includes(name)) {
+      return true
+    }
+
+    const path = this.#getModulePath(name)
+    if (path === null) {
+      ModuleManager._debug(`Path for module ${name} is unknown`)
+      return false
+    }
+    ModuleManager._debug(`Path for module ${name} is ${path}`)
+
+    try {
+      // TODO: Заменить на загрузку JSAR
+
+      const module_ = (await import(path)).default
+      if (!(module_.prototype instanceof AbstractModule)) {
+        throw new Error('Module not extends AbstractModule class')
+      }
+
+      /** @type {AbstractModule} */
+      // eslint-disable-next-line new-cap
+      const moduleclass = new module_()
+
+      moduleclass.load()
+      this.#modules[name] = {
+        path,
+        module: moduleclass
+      }
+
+      this.emit('moduleLoaded', name)
+
+      return true
+    } catch (e) {
+      // @ts-expect-error
+      ModuleManager._error(`Error at loading module ${name}`, e)
+    }
+
+    return false
+  }
+
+  unload (name: string): boolean {
+    if (!this.list().includes(name)) {
+      return true
+    }
+
+    const module = this.#modules[name]
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    delete this.#modules[name]
+
+    module.module.unload()
+    this.emit('moduleUnloaded', name)
+    return true
+  }
+
+  list (): string[] {
+    const systemFolders = getDirectories(SYSTEM_MODULES_DIR)
+    systemFolders.filter(value => existsSync(join(SYSTEM_MODULES_DIR, `${value}/${value}.js`)))
+    const folders = getDirectories(USER_MODULES_DIR)
+    folders.filter(value => existsSync(join(USER_MODULES_DIR, `${value}/${value}.js`)))
+
+    return systemFolders.concat(folders)
+  }
+
+  listLoaded (): string[] {
+    return Object.keys(this.#modules)
+  }
+
+  getModule (name: string): AbstractModule | null {
+    return this.#modules[name]?.module ?? null
+  }
+
+  unloadAll (): void {
+    ModuleManager._info('Unloading all modules')
+    const userModules = this.listLoaded().filter(value => !['cli'].includes(value))
+    userModules.forEach((name) => {
+      ModuleManager._debug(`Unloading module ${name}`)
+      this.unload(name)
+    })
+
+    this.listLoaded().forEach((name) => {
+      ModuleManager._debug(`Unloading module ${name}`)
+      this.unload(name)
+    })
+  }
+
+  disable (name: string): void {
+    const ConfigManager = app('ConfigManager')
+
+    /** @type {ModuleManagerConfig|null} */
+    let config = new ModuleManagerConfig(
+      // @ts-expect-error
+      (ConfigManager.readConfig('core', 'moduleManager')?.getData() ?? undefined)
+    )
+
+    if (config === null) {
+      config = new ModuleManagerConfig()
+    }
+
+    if (!config.getDisabledModules().includes(name)) {
+      config.disableModule(name)
+      ConfigManager.writeConfig('core', config, 'moduleManager')
+    }
+  }
+
+  enable (name: string): void {
+    const ConfigManager = app('ConfigManager')
+
+    /** @type {ModuleManagerConfig|null} */
+    let config = new ModuleManagerConfig(
+      // @ts-expect-error
+      (ConfigManager.readConfig('core', 'moduleManager')?.getData() ?? undefined)
+    )
+
+    if (config === null) {
+      config = new ModuleManagerConfig()
+    }
+
+    if (config.getDisabledModules().includes(name)) {
+      config.enableModule(name)
+      ConfigManager.writeConfig('core', config, 'moduleManager')
+    }
+  }
+
+  #getModulePath (name: string): string | null {
+    const systemPath = join(SYSTEM_MODULES_DIR, `${name}/${name}.js`)
+    const userPath = join(USER_MODULES_DIR, `${name}/${name}.js`)
+    if (existsSync(systemPath)) {
+      return systemPath
+    }
+
+    if (existsSync(userPath)) {
+      return userPath
+    }
+
+    return null
+  }
+
+  static _warning: ((message: string) => void)
+  static _error: (message: string, e: Error | null) => void
+  static _fatal: (message: string, e: Error | null) => void
+  static _debug: (message: string) => void
+  static _info: (message: string) => void
+}
+
+classLogger(ModuleManager)
+
+export default ModuleManager
+
+class ModuleManagerConfig extends DataObject {
+  constructor (data: { disabledModules: string[] } = { disabledModules: [] }) {
+    super(data)
+  }
+
+  getDisabledModules (): string[] {
+    return this.getField('disabledModules')
+  }
+
+  disableModule (name: string): void {
+    const modules = this.getDisabledModules()
+
+    if (modules.includes('name')) {
+      return
+    }
+
+    modules.push(name)
+    this.setField('disabledModules', modules)
+  }
+
+  enableModule (name: string): void {
+    const modules = this.getDisabledModules()
+
+    const index = modules.indexOf(name)
+    if (index === -1) {
+      return
+    }
+
+    modules.splice(index, 1)
+    this.setField('disabledModules', modules)
+  }
+}
+
+// DECLARATIONS
+export interface ModuleManagerEvents extends EventsList {
+  autoLoadFinished: () => void
+  moduleLoaded: (moduleName: string) => void
+  moduleUnloaded: (moduleName: string) => void
+}
