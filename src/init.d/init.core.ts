@@ -1,6 +1,6 @@
 import Core from '../core/core.js'
 import { CoreConfig } from './init.config.js'
-import ModuleManager from '../core/ModuleManager/index.js'
+import ModuleManager from '../core/ModuleManager.js'
 
 export default async function (config: CoreConfig): Promise<void> {
   const moduleManagerClass = new ModuleManager()

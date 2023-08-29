@@ -1,8 +1,9 @@
-import AbstractModule from '../abstractModule.js';
+import AbstractModule from './abstractModule.js';
 import { EventEmitterWrapper, EventsList } from 'utilslib';
 declare class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
     #private;
     static _className: string;
+    constructor(options?: EventEmitterOptions);
     autoload(): Promise<void>;
     /**
        *
@@ -27,4 +28,10 @@ export interface ModuleManagerEvents extends EventsList {
     autoLoadFinished: () => void;
     moduleLoaded: (moduleName: string) => void;
     moduleUnloaded: (moduleName: string) => void;
+}
+interface EventEmitterOptions {
+    /**
+     * Enables automatic capturing of promise rejection.
+     */
+    captureRejections?: boolean | undefined;
 }

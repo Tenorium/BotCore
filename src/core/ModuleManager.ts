@@ -6,9 +6,22 @@ import { classLogger, DataObject, EventEmitterWrapper, EventsList, getDirectorie
 const USER_MODULES_DIR = new URL('../../modules', import.meta.url).pathname
 const SYSTEM_MODULES_DIR = new URL('../../system-modules', import.meta.url).pathname
 
+let constructed = false
+
 class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
   #modules: Record<string, { path: string, module: AbstractModule }> = {}
   static _className = 'ModuleManager'
+
+  constructor (options?: EventEmitterOptions) {
+    if (constructed) {
+      throw new Error('Use app(\'ModuleManager\') instead')
+    }
+
+    constructed = true
+
+    super(options)
+  }
+
   async autoload (): Promise<void> {
     const ConfigManager = app('ConfigManager')
     const modules = this.list()
@@ -222,4 +235,11 @@ export interface ModuleManagerEvents extends EventsList {
   autoLoadFinished: () => void
   moduleLoaded: (moduleName: string) => void
   moduleUnloaded: (moduleName: string) => void
+}
+
+interface EventEmitterOptions {
+  /**
+   * Enables automatic capturing of promise rejection.
+   */
+  captureRejections?: boolean | undefined
 }
