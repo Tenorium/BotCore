@@ -1,4 +1,3 @@
-// @ts-expect-error
 import args from 'splitargs'
 import { Message, MessageMentions } from 'discord.js'
 import { dirname, join } from 'path'
@@ -46,10 +45,12 @@ class CommandManager extends EventEmitterWrapper<CommandManagerEvents> {
 
       if (prefix_ === undefined) {
         const match = message.content.match(MessageMentions.USERS_PATTERN)
-        if (match !== null) {
-          prefix_ = match[0]
+
+        if (match === null) {
+          return
         }
-        return
+
+        prefix_ = match[0]
       }
 
       const messageWithoutPrefix = message.content.replace(prefix_, '')
