@@ -4,3 +4,4 @@
 /old/modules/*
 !/old/modules/.gitkeep
 .idea/
+/build/

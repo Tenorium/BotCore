@@ -1,0 +1,34 @@
+image: node:18
+
+variables:
+  SCOPE: tenorium
+
+stages:
+  - build
+  - test
+  - publish
+
+build:
+  stage: build
+  artifacts:
+    paths:
+      - build
+  cache:
+    key: $CI_COMMIT_REF_NAME
+    policy: push
+    paths:
+      - node_modules
+  script:
+    - npm i
+    - npx tsc
+
+test:
+  stage: test
+  cache:
+    key: $CI_COMMIT_REF_NAME
+    policy: pull
+    paths:
+      - node_modules
+  script:
+    - npm run test
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
