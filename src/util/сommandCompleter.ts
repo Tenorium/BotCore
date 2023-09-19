@@ -37,19 +37,26 @@ export class CommandCompleter {
       return [[], command]
     }
 
-    const argOptions = cmd.getArguments()[argIndex].valueList
+    const argOptions = cmd.getArguments()[argIndex].getValueList(args)
 
     const prefix = args[argIndex] ?? ''
 
     if (prefix === '') {
-      return [argOptions, command]
+      return [
+        argOptions.map(argOption => parsedCmd + ' ' + args.slice(0, argIndex).join(' ') + ' ' + argOption),
+        command
+      ]
     }
 
     const matches = argOptions.filter(opt =>
       opt.startsWith(prefix)
     )
 
-    return [(matches.length > 0) ? matches : argOptions, prefix]
+    return [
+      (matches.length > 0)
+        ? matches
+        : argOptions, prefix
+    ]
   }
 
   addCommand (command: Command): void {
@@ -80,7 +87,7 @@ export class CommandCompleter {
       }
 
       const argument = validArguments[index]
-      return !argument.valueList.includes(arg)
+      return !argument.getValueList(args).includes(arg)
     })
 
     return argIndex >= 0 ? argIndex : -1
@@ -113,13 +120,13 @@ export class Command {
 }
 
 export class CommandArgument {
-  readonly #valueListCallback: () => string[]
+  readonly #valueListCallback: (enteredArgs: string[]) => string[]
 
-  constructor (valueListCallback: () => string[]) {
+  constructor (valueListCallback: (enteredArgs: string[]) => string[]) {
     this.#valueListCallback = valueListCallback
   }
 
-  get valueList (): string[] {
-    return this.#valueListCallback()
+  getValueList (enteredArgs: string[]): string[] {
+    return this.#valueListCallback(enteredArgs)
   }
 }

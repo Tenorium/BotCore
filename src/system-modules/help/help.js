@@ -1,21 +1,24 @@
-import { MessageEmbed } from 'discord.js';
-import AbstractModule from '#abstractModule';
-import CommandManager from '#commandManager';
-import { dirname, join } from 'path';
-import i18n_ from 'i18n';
+import { MessageEmbed } from 'discord.js'
+import AbstractModule from '../../core/abstractModule.js'
+import { dirname, join } from 'path'
+import i18n_ from 'i18n'
 
-const { I18n } = i18n_;
+const { I18n } = i18n_
 
 const i18n = new I18n({
   locales: ['en', 'ru'],
   directory: join(dirname(new URL('', import.meta.url).pathname), 'locale')
-});
+})
 
-i18n.setLocale(app().getConfig().locale);
+// eslint-disable-next-line no-undef
+i18n.setLocale(app('Core').getConfig().locale)
 
-const helps = [];
+// eslint-disable-next-line no-undef
+const CommandManager = app('CommandManager')
 
-const MAX_PAGE_SIZE = 2;
+const helps = []
+
+const MAX_PAGE_SIZE = 2
 
 /**
  *
@@ -24,21 +27,21 @@ const MAX_PAGE_SIZE = 2;
  * @private
  */
 const buildEmbed = (page) => {
-  const sortedHelps = helps.sort((a, b) => (a ?? 0).toString().localeCompare((b ?? 0).toString()));
-  const pagedHelps = sortedHelps.slice((MAX_PAGE_SIZE - 1) * (page - 1), ((MAX_PAGE_SIZE - 1) * page) + 1);
+  const sortedHelps = helps.sort((a, b) => (a ?? 0).toString().localeCompare((b ?? 0).toString()))
+  const pagedHelps = sortedHelps.slice((MAX_PAGE_SIZE - 1) * (page - 1), ((MAX_PAGE_SIZE - 1) * page) + 1)
 
-  let description = '';
+  let description = ''
   pagedHelps.forEach((value) => {
     description +=
             `**${value.name}**\n
             ${i18n.__('usage')} *${value.usage}*\n
             ${value.description}\n\n`
-  });
+  })
 
-  const embed = new MessageEmbed();
-  embed.setColor('YELLOW');
-  embed.setDescription(description);
-  return embed;
+  const embed = new MessageEmbed()
+  embed.setColor('YELLOW')
+  embed.setDescription(description)
+  return embed
 }
 
 // const maxPages = () => {
@@ -58,7 +61,7 @@ export default class HelpModule extends AbstractModule {
         name: command,
         description,
         usage
-      });
+      })
   }
 
   /**
@@ -68,23 +71,23 @@ export default class HelpModule extends AbstractModule {
   static removeCommandHelp (command) {
     for (const helpRecord in helps) {
       if (helpRecord.name === command) {
-        const index = helps.indexOf(helpRecord);
-        helps.splice(index, 1);
-        break;
+        const index = helps.indexOf(helpRecord)
+        helps.splice(index, 1)
+        break
       }
     }
   }
 
   load () {
     CommandManager.registerCommand('help', async (args, message) => {
-      const embed = buildEmbed(1);
+      const embed = buildEmbed(1)
 
       /**
              *
              * @param {import('discord.js').MessageReaction} reaction
              * @param {import('discord.js').User} user
              */
-      const filter = (reaction, user) => !user.bot && ['❌', '⬅', '➡'].includes(reaction.emoji.name);
+      const filter = (reaction, user) => !user.bot && ['❌', '⬅', '➡'].includes(reaction.emoji.name)
 
       message.channel.send({
         embeds: [
@@ -94,32 +97,32 @@ export default class HelpModule extends AbstractModule {
         let page = 1;
 
         (async () => {
-          await newMessage.react('⬅');
-          await newMessage.react('❌');
-          await newMessage.react('➡');
-        })();
+          await newMessage.react('⬅')
+          await newMessage.react('❌')
+          await newMessage.react('➡')
+        })()
 
-        const collector = newMessage.createReactionCollector({ filter });
+        const collector = newMessage.createReactionCollector({ filter })
 
         collector.on('collect', function (reaction, user) {
-          reaction.users.remove(user);
+          reaction.users.remove(user)
           if (reaction.emoji.name === '⬅') {
             if (page <= 1) {
-              return;
+              return
             }
-            page--;
+            page--
           }
 
           if (reaction.emoji.name === '➡') {
             if (page >= (helps.length / MAX_PAGE_SIZE)) {
-              return;
+              return
             }
-            page++;
+            page++
           }
 
           if (reaction.emoji.name === '❌') {
-            collector.stop();
-            return;
+            collector.stop()
+            return
           }
 
           newMessage.edit(
@@ -128,16 +131,16 @@ export default class HelpModule extends AbstractModule {
                 buildEmbed(page)
               ]
             }
-          );
-        });
+          )
+        })
 
         collector.on('end', () => {
-          newMessage.delete();
-        });
-      });
-    });
+          newMessage.delete()
+        })
+      })
+    })
 
-    HelpModule.addCommandHelp('help', 'Show this message', 'help');
+    HelpModule.addCommandHelp('help', 'Show this message', 'help')
   }
 
   unload () {

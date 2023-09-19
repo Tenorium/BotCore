@@ -1,7 +1,5 @@
 /node_modules/
 /data/index.js
-!/old/data/index.js
-/old/modules/*
-!/old/modules/.gitkeep
 .idea/
 /build/
+/modules/

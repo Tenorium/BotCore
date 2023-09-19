@@ -1,15 +1,15 @@
 import args from 'splitargs'
 import { Message, MessageMentions } from 'discord.js'
-import { dirname, join } from 'path'
+import { join } from 'path'
 import i18n_ from 'i18n'
-import { EventEmitterWrapper, classLogger, EventsList } from 'utilslib'
+import { EventEmitterWrapper, classLogger, EventsList } from '@tenorium/utilslib'
 
 const { I18n } = i18n_
 const configManager = app('ConfigManager')
 
 const i18n = new I18n({
   locales: ['en', 'ru'],
-  directory: join(dirname(new URL('', import.meta.url).pathname), './CommandManager/locale')
+  directory: join(basePath, 'core/CommandManager/locale')
 })
 
 i18n.setLocale(configManager.readConfig('core')?.getField('locale') ?? 'en')

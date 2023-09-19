@@ -1,13 +1,14 @@
 import path, { dirname } from 'path'
 import getConfig from './init.d/init.config.js'
 import colors from 'colors'
-import initCore from './init.d/init.core.js'
 import autoUpdate from './init.d/init.autoupdate.js'
 import fs from 'fs'
 import * as util from 'util'
-import serviceLocator from './init.d/init.sl.js'
+import { fileURLToPath } from 'url'
 
-global.basePath = dirname(new URL('', import.meta.url).pathname)
+global.basePath = dirname(fileURLToPath(new URL('', import.meta.url)))
+
+const serviceLocator = (await import('./init.d/init.sl.js')).default
 
 serviceLocator()
 
@@ -38,6 +39,8 @@ console.log = function () {
   process.stdout.write(message.trim() + '\n')
   logFile.write(message.trim() + '\n')
 }
+
+const initCore = (await import('./init.d/init.core.js')).default
 
 await initCore(config)
 

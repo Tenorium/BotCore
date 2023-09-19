@@ -1,10 +1,11 @@
 import { join } from 'path'
 import { existsSync } from 'fs'
 import AbstractModule from './abstractModule.js'
-import { classLogger, DataObject, EventEmitterWrapper, EventsList, getDirectories } from 'utilslib'
+import { classLogger, DataObject, EventEmitterWrapper, EventsList, getDirectories } from '@tenorium/utilslib'
+import { fileURLToPath, pathToFileURL } from 'url'
 
-const USER_MODULES_DIR = new URL('../../modules', import.meta.url).pathname
-const SYSTEM_MODULES_DIR = new URL('../../system-modules', import.meta.url).pathname
+const USER_MODULES_DIR = fileURLToPath(new URL('../../modules', import.meta.url))
+const SYSTEM_MODULES_DIR = fileURLToPath(new URL('../system-modules', import.meta.url))
 
 let constructed = false
 
@@ -53,7 +54,12 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
       return true
     }
 
-    const path = this.#getModulePath(name)
+    let path = this.#getModulePath(name)
+
+    if (path !== null && process.platform === 'win32') {
+      path = pathToFileURL(path).toString()
+    }
+
     if (path === null) {
       ModuleManager._debug(`Path for module ${name} is unknown`)
       return false
@@ -64,8 +70,12 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
       // TODO: Заменить на загрузку JSAR
 
       const module_ = (await import(path)).default
+      if (module_ === undefined) {
+        ModuleManager._error('Error at loading module', new Error(`Module ${name} not have a default class`))
+      }
+
       if (!(module_.prototype instanceof AbstractModule)) {
-        throw new Error('Module not extends AbstractModule class')
+        ModuleManager._error('Error at loading module', new Error(`Module ${name} not extends AbstractModule class`))
       }
 
       /** @type {AbstractModule} */
@@ -175,6 +185,10 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
   #getModulePath (name: string): string | null {
     const systemPath = join(SYSTEM_MODULES_DIR, `${name}/${name}.js`)
     const userPath = join(USER_MODULES_DIR, `${name}/${name}.js`)
+
+    console.log(`systemPath: ${systemPath}`)
+    console.log(`userPath: ${userPath}`)
+
     if (existsSync(systemPath)) {
       return systemPath
     }

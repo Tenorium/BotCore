@@ -1,5 +1,6 @@
 import readline from 'readline/promises'
-import { DataObject, LoggerConfig } from 'utilslib'
+import { DataObject, LoggerConfig } from '@tenorium/utilslib'
+import { ClientOptions } from 'discord.js'
 
 export default async function (): Promise<CoreConfig> {
   const configManager = app('ConfigManager')
@@ -8,7 +9,7 @@ export default async function (): Promise<CoreConfig> {
 
   const config = new CoreConfig(configData)
 
-  if (configData === null) {
+  if (configData === undefined) {
     console.log('Config not exist.')
     console.log('Starting configuration wizard...')
 
@@ -55,7 +56,7 @@ export class CoreConfig extends DataObject {
   }
 
   getLoggerConfig (): LoggerConfig {
-    return this.getDataObjectFromField('logger') as LoggerConfig
+    return new LoggerConfig(this.getDataObjectFromField('logger')?.getData() as { debug: boolean, dateformat: string })
   }
 
   setLoggerConfig (config: LoggerConfig): void {
@@ -63,7 +64,7 @@ export class CoreConfig extends DataObject {
   }
 
   getClientConfig (): ClientConfig {
-    return this.getDataObjectFromField('client') as ClientConfig
+    return new ClientConfig(this.getDataObjectFromField('client')?.getData() as ClientOptions | undefined)
   }
 
   setClientConfig (config: ClientConfig): void {
@@ -96,7 +97,7 @@ export class CoreConfig extends DataObject {
 }
 
 export class ClientConfig extends DataObject {
-  constructor (data: { intents: number[] } = { intents: [32767] }) {
+  constructor (data: ClientOptions = { intents: [32767] }) {
     super(data)
   }
 

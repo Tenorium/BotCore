@@ -1,10 +1,9 @@
 import { Awaitable, Client, ClientEvents, ClientOptions } from 'discord.js'
 import { v4 as uuidv4 } from 'uuid'
-import { Logger } from 'utilslib'
+import { Logger } from '@tenorium/utilslib'
 import wtfnode from 'wtfnode'
 import { CoreConfig } from '../init.d/init.config.js'
-
-const ModuleManager = app('ModuleManager')
+import CommandManager from './CommandManager.js'
 
 declare type EventHandlerInternalType = (...args: any) => Awaitable<void>
 
@@ -13,6 +12,7 @@ export default class Core {
   readonly #config: CoreConfig | undefined
 
   #client: import('discord.js').Client | undefined
+  static #initialized: boolean = false
 
   constructor (config: CoreConfig) {
     if (app('ServiceLocator').has('Core')) {
@@ -21,14 +21,19 @@ export default class Core {
 
     this.#config = config
     Logger.setConfig(this.#config?.getLoggerConfig())
-
-    this.init()
   }
 
   /**
      * Core initialization function
      */
-  private init (): void {
+  init (): void {
+    if (Core.#initialized) {
+      return
+    }
+
+    const ServiceLocator = app('ServiceLocator')
+    const ModuleManager = app('ModuleManager')
+
     Logger.debug('Core init started!')
 
     try {
@@ -37,6 +42,8 @@ export default class Core {
       // @ts-expect-error
       Logger.error('Unexpected error in Client', e)
     }
+
+    ServiceLocator.register('CommandManager', new CommandManager())
 
     void ModuleManager.autoload().then(() => {
       if (this.#client === undefined) {
@@ -58,6 +65,8 @@ export default class Core {
         Logger.error('Unexpected error in ModuleManager at autoload', reason)
       }
     )
+
+    Core.#initialized = true
   }
 
   /**
@@ -85,6 +94,8 @@ export default class Core {
       Logger.fatal('Client is undefined')
       throw new Error('Client is undefined')
     }
+
+    const ModuleManager = app('ModuleManager')
 
     this.#client.destroy()
 
@@ -152,5 +163,13 @@ export default class Core {
     }
 
     this.#client.off(event.name, event.handler)
+  }
+}
+
+// DECLARATIONS
+
+declare global {
+  interface AppServices {
+    CommandManager: CommandManager
   }
 }

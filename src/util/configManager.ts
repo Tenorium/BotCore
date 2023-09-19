@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import path from 'path'
-import { DataObject } from 'utilslib'
+import { DataObject } from '@tenorium/utilslib'
 
 const dataPath = path.join(basePath, 'data')
 
@@ -37,6 +37,6 @@ export default class ConfigManager {
       return
     }
 
-    fs.writeFileSync(configPath, JSON.stringify(data, null, 2))
+    fs.writeFileSync(configPath, data.toJSON(true))
   }
 }
