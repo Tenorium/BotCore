@@ -8,6 +8,7 @@ export default async function (config: CoreConfig): Promise<void> {
 
   const core = new Core(config)
   app('ServiceLocator').register('Core', core)
+  core.init()
 }
 
 declare global {
