@@ -1,22 +1,30 @@
-import { MessageEmbed } from 'discord.js'
+import { Message, MessageEmbed, MessageReaction, User } from 'discord.js'
 import AbstractModule from '../../core/abstractModule.js'
-import { dirname, join } from 'path'
+import { join } from 'path'
 import i18n_ from 'i18n'
 
 const { I18n } = i18n_
 
 const i18n = new I18n({
   locales: ['en', 'ru'],
-  directory: join(dirname(new URL('', import.meta.url).pathname), 'locale')
+  directory: join(basePath, 'build/system-modules/help/locale'),
+  defaultLocale: 'en'
 })
 
-// eslint-disable-next-line no-undef
-i18n.setLocale(app('Core').getConfig().locale)
+const locale = app('Core').getConfig()?.getLocale()
+
+if (locale !== undefined) {
+  i18n.setLocale(locale)
+}
 
 // eslint-disable-next-line no-undef
 const CommandManager = app('CommandManager')
 
-const helps = []
+const helps: Array<{
+  name: string
+  description: string
+  usage: string
+}> = []
 
 const MAX_PAGE_SIZE = 2
 
@@ -26,8 +34,8 @@ const MAX_PAGE_SIZE = 2
  * @return {MessageEmbed}
  * @private
  */
-const buildEmbed = (page) => {
-  const sortedHelps = helps.sort((a, b) => (a ?? 0).toString().localeCompare((b ?? 0).toString()))
+const buildEmbed = (page: number): MessageEmbed => {
+  const sortedHelps = helps.sort((a, b) => a.name.toString().localeCompare(b.name.toString()))
   const pagedHelps = sortedHelps.slice((MAX_PAGE_SIZE - 1) * (page - 1), ((MAX_PAGE_SIZE - 1) * page) + 1)
 
   let description = ''
@@ -55,7 +63,7 @@ export default class HelpModule extends AbstractModule {
      * @param {string} description
      * @param {string} usage
      */
-  static addCommandHelp (command, description, usage) {
+  static addCommandHelp (command: string, description: string, usage: string): void {
     helps.push(
       {
         name: command,
@@ -68,8 +76,8 @@ export default class HelpModule extends AbstractModule {
      *
      * @param {string} command
      */
-  static removeCommandHelp (command) {
-    for (const helpRecord in helps) {
+  static removeCommandHelp (command: string): void {
+    for (const helpRecord of helps) {
       if (helpRecord.name === command) {
         const index = helps.indexOf(helpRecord)
         helps.splice(index, 1)
@@ -78,8 +86,8 @@ export default class HelpModule extends AbstractModule {
     }
   }
 
-  load () {
-    CommandManager.registerCommand('help', async (args, message) => {
+  load (): void {
+    CommandManager.registerCommand('help', (args: string[], message: Message): void => {
       const embed = buildEmbed(1)
 
       /**
@@ -87,16 +95,16 @@ export default class HelpModule extends AbstractModule {
              * @param {import('discord.js').MessageReaction} reaction
              * @param {import('discord.js').User} user
              */
-      const filter = (reaction, user) => !user.bot && ['❌', '⬅', '➡'].includes(reaction.emoji.name)
+      const filter = (reaction: MessageReaction, user: User): boolean => !user.bot && reaction.emoji.name !== null && ['❌', '⬅', '➡'].includes(reaction.emoji.name)
 
-      message.channel.send({
+      void message.channel.send({
         embeds: [
           embed
         ]
       }).then((newMessage) => {
-        let page = 1;
+        let page = 1
 
-        (async () => {
+        void (async () => {
           await newMessage.react('⬅')
           await newMessage.react('❌')
           await newMessage.react('➡')
@@ -105,7 +113,7 @@ export default class HelpModule extends AbstractModule {
         const collector = newMessage.createReactionCollector({ filter })
 
         collector.on('collect', function (reaction, user) {
-          reaction.users.remove(user)
+          void reaction.users.remove(user)
           if (reaction.emoji.name === '⬅') {
             if (page <= 1) {
               return
@@ -125,7 +133,7 @@ export default class HelpModule extends AbstractModule {
             return
           }
 
-          newMessage.edit(
+          void newMessage.edit(
             {
               embeds: [
                 buildEmbed(page)
@@ -135,7 +143,7 @@ export default class HelpModule extends AbstractModule {
         })
 
         collector.on('end', () => {
-          newMessage.delete()
+          void newMessage.delete()
         })
       })
     })
@@ -143,6 +151,6 @@ export default class HelpModule extends AbstractModule {
     HelpModule.addCommandHelp('help', 'Show this message', 'help')
   }
 
-  unload () {
+  unload (): void {
   }
 }

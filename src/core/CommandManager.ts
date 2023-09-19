@@ -9,7 +9,8 @@ const configManager = app('ConfigManager')
 
 const i18n = new I18n({
   locales: ['en', 'ru'],
-  directory: join(basePath, 'core/CommandManager/locale')
+  directory: join(basePath, 'build/core/CommandManager/locale'),
+  defaultLocale: 'en'
 })
 
 i18n.setLocale(configManager.readConfig('core')?.getField('locale') ?? 'en')
