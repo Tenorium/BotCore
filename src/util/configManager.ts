@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import path from 'path'
 import { DataObject } from '@tenorium/utilslib'
 
-const dataPath = path.join(basePath, 'data')
+const dataPath = path.join(basePath, '../data')
 
 if (!fs.existsSync(dataPath)) {
   fs.mkdirSync(dataPath)
