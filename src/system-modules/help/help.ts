@@ -1,15 +1,7 @@
 import { Message, MessageEmbed, MessageReaction, User } from 'discord.js'
 import AbstractModule from '../../core/abstractModule.js'
-import { join } from 'path'
-import i18n_ from 'i18n'
-
-const { I18n } = i18n_
-
-const i18n = new I18n({
-  locales: ['en', 'ru'],
-  directory: join(basePath, 'build/system-modules/help/locale'),
-  defaultLocale: 'en'
-})
+import LocaleManager from '../../util/localeManager.js'
+const i18n = LocaleManager.getI18n('help')
 
 const locale = app('Core').getConfig()?.getLocale()
 
