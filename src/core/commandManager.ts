@@ -1,19 +1,14 @@
 import args from 'splitargs'
 import { Message, MessageMentions } from 'discord.js'
-import { join } from 'path'
-import i18n_ from 'i18n'
 import { EventEmitterWrapper, classLogger, EventsList } from '@tenorium/utilslib'
+import LocaleManager from '../util/localeManager.js'
 
-const { I18n } = i18n_
-const configManager = app('ConfigManager')
+const i18n = LocaleManager.getI18n('commandManager')
+const locale = app('Core').getConfig()?.getLocale()
 
-const i18n = new I18n({
-  locales: ['en', 'ru'],
-  directory: join(basePath, 'build/core/CommandManager/locale'),
-  defaultLocale: 'en'
-})
-
-i18n.setLocale(configManager.readConfig('core')?.getField('locale') ?? 'en')
+if (locale !== undefined) {
+  i18n.setLocale(locale)
+}
 
 let constructed: boolean = false
 const commands: Record<string, CommandHandlerFunc> = {}
