@@ -4,11 +4,7 @@ import { EventEmitterWrapper, classLogger, EventsList } from '@tenorium/utilslib
 import LocaleManager from '../util/localeManager.js'
 
 const i18n = LocaleManager.getI18n('commandManager')
-const locale = app('Core').getConfig()?.getLocale()
-
-if (locale !== undefined) {
-  i18n.setLocale(locale)
-}
+let locale: string | undefined
 
 let constructed: boolean = false
 const commands: Record<string, CommandHandlerFunc> = {}
@@ -23,6 +19,12 @@ class CommandManager extends EventEmitterWrapper<CommandManagerEvents> {
     }
 
     super()
+
+    locale = app('Core').getConfig()?.getLocale()
+
+    if (locale !== undefined) {
+      i18n.setLocale(locale)
+    }
 
     app('Core').registerClientEvent('messageCreate', function (message: Message) {
       const prefix = app('Core').getConfig()?.getPrefix()

@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { Logger } from '@tenorium/utilslib'
 import wtfnode from 'wtfnode'
 import { CoreConfig } from '../init.d/init.config.js'
-import CommandManager from './CommandManager.js'
+import CommandManager from './commandManager.js'
 
 declare type EventHandlerInternalType = (...args: any) => Awaitable<void>
 
@@ -34,7 +34,7 @@ export default class Core {
     const ServiceLocator = app('ServiceLocator')
     const ModuleManager = app('ModuleManager')
 
-    Logger.debug('Core init started!')
+    Logger.info('Core init started!')
 
     try {
       this.#client = new Client(this.#config?.getClientConfig().getData() as ClientOptions)

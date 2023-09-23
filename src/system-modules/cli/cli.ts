@@ -1,7 +1,7 @@
 import readline from 'readline'
 import AbstractModule from '../../core/abstractModule.js'
 import { Logger } from '@tenorium/utilslib'
-import { run } from './default-commands.js'
+import { run } from './defaultCommands.js'
 import splitargs from 'splitargs'
 import { CommandCompleter } from '../../util/сommandCompleter.js'
 
