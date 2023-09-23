@@ -186,9 +186,6 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
     const systemPath = join(SYSTEM_MODULES_DIR, `${name}/${name}.js`)
     const userPath = join(USER_MODULES_DIR, `${name}/${name}.js`)
 
-    console.log(`systemPath: ${systemPath}`)
-    console.log(`userPath: ${userPath}`)
-
     if (existsSync(systemPath)) {
       return systemPath
     }

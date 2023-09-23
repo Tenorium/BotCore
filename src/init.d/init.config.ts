@@ -17,13 +17,17 @@ export default async function (): Promise<CoreConfig> {
 
     const rl = readline.createInterface(process.stdin, process.stdout)
 
-    let locale = await rl.question('Select language(default "en", available "en", "ru"): ')
+    console.log('Select language (default "en", available "en", "ru"): ')
+    let locale = await rl.question('')
     if (!['en', 'ru'].includes(locale)) {
       locale = 'en'
     }
 
-    const token = await rl.question('Enter bot token: ')
-    let prefix = await rl.question('Enter prefix(default "//"): ')
+    console.log('Enter bot token: ')
+    const token = await rl.question('')
+
+    console.log('Enter prefix (default "//"): ')
+    let prefix = await rl.question('')
 
     if (prefix.length === 0) {
       prefix = '//'
