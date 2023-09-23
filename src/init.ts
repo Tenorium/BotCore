@@ -40,6 +40,8 @@ console.log = function () {
   logFile.write(message.trim() + '\n')
 }
 
+console.log('Loading core...')
+
 const initCore = (await import('./init.d/init.core.js')).default
 
 await initCore(config)
