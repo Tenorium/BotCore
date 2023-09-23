@@ -26,7 +26,7 @@ export default class LocaleManager {
       { withFileTypes: true }
     )
       .filter(dirent => dirent.isFile() && dirent.name.endsWith('.json'))
-      .map(dirent => dirent.name)
+      .map(dirent => dirent.name.replace('.json', ''))
   }
 
   static listPackages (): string[] {
