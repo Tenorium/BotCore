@@ -1,11 +1,22 @@
 import { join } from 'path'
 import { existsSync } from 'fs'
 import AbstractModule from './abstractModule.js'
-import { classLogger, DataObject, EventEmitterWrapper, EventsList, getDirectories } from '@tenorium/utilslib'
+import {
+  arrayIncludesAll,
+  classLogger,
+  DataObject,
+  EventEmitterWrapper,
+  EventsList,
+  getDirectories
+} from '@tenorium/utilslib'
 import { fileURLToPath, pathToFileURL } from 'url'
+import { uniqueArray } from '@tenorium/utilslib/build/util'
 
 const USER_MODULES_DIR = fileURLToPath(new URL('../../modules', import.meta.url))
 const SYSTEM_MODULES_DIR = fileURLToPath(new URL('../system-modules', import.meta.url))
+
+const DEFAULT_DISABLED_MODULES: string[] = ['test']
+const PROTECTED_MODULES: string[] = ['cli']
 
 let constructed = false
 
@@ -26,15 +37,18 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
   async autoload (): Promise<void> {
     const ConfigManager = app('ConfigManager')
     const modules = this.list()
-    let disabledModules = []
+    let disabledModules: string[] = []
 
-    const config = ConfigManager.readConfig('core', 'moduleManager')
+    const config = new ModuleManagerConfig(
+      // @ts-expect-error
+      (ConfigManager.readConfig('core', 'moduleManager')?.getData() ?? undefined)
+    )
     if (config !== null) {
-      disabledModules = config.getField('disabledModules')
+      disabledModules = config.getDisabledModules()
     }
 
     for (const module_ of modules) {
-      if (disabledModules.includes(module_) === true) {
+      if (disabledModules.includes(module_)) {
         ModuleManager._debug(`Module ${module_} is disabled, skipping.`)
         continue
       }
@@ -126,13 +140,14 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
     return Object.keys(this.#modules)
   }
 
+  // TODO: Dynamic types
   getModule (name: string): AbstractModule | null {
     return this.#modules[name]?.module ?? null
   }
 
   unloadAll (): void {
     ModuleManager._info('Unloading all modules')
-    const userModules = this.listLoaded().filter(value => !['cli'].includes(value))
+    const userModules = this.listLoaded().filter(value => !PROTECTED_MODULES.includes(value))
     userModules.forEach((name) => {
       ModuleManager._debug(`Unloading module ${name}`)
       this.unload(name)
@@ -145,6 +160,10 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
   }
 
   disable (name: string): void {
+    if (PROTECTED_MODULES.includes(name)) {
+      throw new Error(`Module ${name} is protected and can't be disabled`)
+    }
+
     const ConfigManager = app('ConfigManager')
 
     /** @type {ModuleManagerConfig|null} */
@@ -209,12 +228,20 @@ classLogger(ModuleManager)
 export default ModuleManager
 
 class ModuleManagerConfig extends DataObject {
-  constructor (data: { disabledModules: string[] } = { disabledModules: [] }) {
+  constructor (data: { disabledModules: string[] } = { disabledModules: DEFAULT_DISABLED_MODULES }) {
     super(data)
   }
 
   getDisabledModules (): string[] {
-    return this.getField('disabledModules')
+    let data: string[] = this.getField('disabledModules')
+
+    if (!arrayIncludesAll(DEFAULT_DISABLED_MODULES, data)) {
+      data = uniqueArray([
+        ...DEFAULT_DISABLED_MODULES, ...data
+      ])
+    }
+
+    return data
   }
 
   disableModule (name: string): void {
