@@ -146,3 +146,11 @@ export default class HelpModule extends AbstractModule {
   unload (): void {
   }
 }
+
+// DECLARATIONS
+
+declare global {
+  interface AppModules {
+    help: HelpModule
+  }
+}

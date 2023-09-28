@@ -21,7 +21,7 @@ const PROTECTED_MODULES: string[] = ['cli']
 let constructed = false
 
 class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
-  #modules: Record<string, { path: string, module: AbstractModule }> = {}
+  #modules: Record<keyof AppModules | string, { path: string, module: AppModules[keyof AppModules | string] | AbstractModule }> = {}
   static _className = 'ModuleManager'
 
   constructor (options?: EventEmitterOptions) {
@@ -140,8 +140,8 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
     return Object.keys(this.#modules)
   }
 
-  // TODO: Dynamic types
-  getModule (name: string): AbstractModule | null {
+  getModule<T extends keyof AppModules | string> (name: T): (T extends keyof AppModules ? AppModules[T] : AbstractModule) | null {
+    // @ts-expect-error Don't know how to fix this
     return this.#modules[name]?.module ?? null
   }
 
@@ -280,4 +280,11 @@ interface EventEmitterOptions {
    * Enables automatic capturing of promise rejection.
    */
   captureRejections?: boolean | undefined
+}
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
+  interface AppModules {
+    [key: string]: AbstractModule
+  }
 }

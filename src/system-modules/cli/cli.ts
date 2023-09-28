@@ -90,7 +90,13 @@ export default class CliModule extends AbstractModule {
   }
 }
 
-// DECLARATION
+// DECLARATIONS
 
 export type CommandHandler = (input: string) => void
 export type CompleterCallback = (completer: CommandCompleter) => void
+
+declare global {
+  interface AppModules {
+    cli: CliModule
+  }
+}
