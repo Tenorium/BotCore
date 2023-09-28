@@ -15,7 +15,7 @@ class CommandManager extends EventEmitterWrapper<CommandManagerEvents> {
 
   constructor () {
     if (constructed) {
-      throw new Error('Use app(\'CommandManager\') instead')
+      throw new ConstructorUsedError()
     }
 
     super()
@@ -80,41 +80,39 @@ class CommandManager extends EventEmitterWrapper<CommandManagerEvents> {
      * @param {!string} commandName
      * @param {CommandHandlerFunc} handler
      * @fires CommandManager#commandRegistered
-     * @throws Error
+     * @throws {CommandAlreadyRegisteredError}
      */
   registerCommand (commandName: string, handler: CommandHandlerFunc): void {
-    if (!Object.hasOwn(commands, commandName)) {
-      commands[commandName] = handler
+    if (Object.hasOwn(commands, commandName)) {
+      throw new CommandAlreadyRegisteredError()
+    }
 
-      /**
+    commands[commandName] = handler
+
+    /**
        * Registered command
        *
        * @event CommandManager#commandRegistered
        * @type {string}
        */
-      this.emit('commandRegistered', commandName)
-      return
-    }
-
-    throw new Error('Command already registered!')
+    this.emit('commandRegistered', commandName)
   }
 
   /**
      * Unregister command
      * @param {!string} commandName
      * @fires CommandManager#commandUnregistered
-     * @throws Error
+     * @throws {CommandNotExistsError}
      */
   unregisterCommand (commandName: string): void {
-    if (this.hasCommand(commandName)) {
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete commands[commandName]
-
-      this.emit('commandUnregistered', commandName)
-      return
+    if (!this.hasCommand(commandName)) {
+      throw new CommandNotExistsError()
     }
 
-    throw new Error('Command not exist!')
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    delete commands[commandName]
+
+    this.emit('commandUnregistered', commandName)
   }
 
   listCommands (): string[] {
@@ -129,11 +127,11 @@ class CommandManager extends EventEmitterWrapper<CommandManagerEvents> {
      * Check if command disabled
      * @param {!string} commandName
      * @return {boolean}
-     * @throws Error
+     * @throws {CommandNotExistsError}
      */
   isDisabled (commandName: string): boolean {
     if (!this.hasCommand(commandName)) {
-      throw new Error('Command not exist!')
+      throw new CommandNotExistsError()
     }
 
     return disabledCommands.includes(commandName)
@@ -143,12 +141,15 @@ class CommandManager extends EventEmitterWrapper<CommandManagerEvents> {
      * Disable command
      * @fires CommandManager#commandDisabled
      * @param commandName
-     * @throws Error
+     * @throws {CommandNotExistsError}
+     * @throws {CommandAlreadyDisabledError}
      */
   disableCommand (commandName: string): void {
-    if (!this.isDisabled(commandName)) {
-      disabledCommands.push(commandName)
+    if (this.isDisabled(commandName)) {
+      throw new CommandAlreadyDisabledError()
     }
+
+    disabledCommands.push(commandName)
 
     /**
      * Disabled command event
@@ -162,7 +163,7 @@ class CommandManager extends EventEmitterWrapper<CommandManagerEvents> {
      * Enable command
      * @fires CommandManager#commandEnabled
      * @param commandName
-     * @throws Error
+     * @throws {CommandNotExistsError}
      */
   enableCommand (commandName: string): void {
     if (this.isDisabled(commandName)) {
@@ -233,6 +234,34 @@ const errorCommandHandler = function (command: string, message: Message, e: Erro
   CommandManager._error('Unhandled error from command.\n', e)
 }
 
+// ERRORS
+
+export class ConstructorUsedError extends Error {
+  constructor () {
+    super('Use app(\'CommandManager\') instead')
+  }
+}
+
+export class CommandAlreadyRegisteredError extends Error {
+  constructor () {
+    super('Command already registered!')
+  }
+}
+
+export class CommandNotExistsError extends Error {
+  constructor () {
+    super('Command not exists!')
+  }
+}
+
+export class CommandAlreadyDisabledError extends Error {
+  constructor () {
+    super('Command already disabled!')
+  }
+}
+
+// DECLARATIONS
+
 /**
  * @event CommandsEventEmitter#commandRegistered
  * @type {string}
@@ -253,7 +282,6 @@ const errorCommandHandler = function (command: string, message: Message, e: Erro
  * @type {string}
  */
 
-// DECLARATIONS
 export type CommandHandlerFunc = (args: string[], message: Message) => void
 export interface CommandManagerEvents extends EventsList {
   commandRegistered: (commandName: string) => void

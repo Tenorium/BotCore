@@ -7,10 +7,10 @@ import {
   DataObject,
   EventEmitterWrapper,
   EventsList,
-  getDirectories
+  getDirectories,
+  uniqueArray
 } from '@tenorium/utilslib'
 import { fileURLToPath, pathToFileURL } from 'url'
-import { uniqueArray } from '@tenorium/utilslib/build/util'
 
 const USER_MODULES_DIR = fileURLToPath(new URL('../../modules', import.meta.url))
 const SYSTEM_MODULES_DIR = fileURLToPath(new URL('../system-modules', import.meta.url))

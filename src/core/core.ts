@@ -16,7 +16,7 @@ export default class Core {
 
   constructor (config: CoreConfig) {
     if (app('ServiceLocator').has('Core')) {
-      return app('ServiceLocator').get('Core')
+      throw new ConstructorUsedError()
     }
 
     this.#config = config
@@ -28,7 +28,7 @@ export default class Core {
      */
   init (): void {
     if (Core.#initialized) {
-      return
+      throw new CoreAlreadyInitializedError()
     }
 
     const ServiceLocator = app('ServiceLocator')
@@ -154,7 +154,7 @@ export default class Core {
   unregisterClientEvent (uuid: string): void {
     const event = this.#events[uuid] ?? null
     if (event === null) {
-      throw new Error('Event not found')
+      throw new EventNotFountError()
     }
 
     if (this.#client === undefined) {
@@ -163,6 +163,26 @@ export default class Core {
     }
 
     this.#client.off(event.name, event.handler)
+  }
+}
+
+// ERRORS
+
+export class ConstructorUsedError extends Error {
+  constructor () {
+    super('Use app(\'Core\') instead')
+  }
+}
+
+export class CoreAlreadyInitializedError extends Error {
+  constructor () {
+    super('Core already initialized!')
+  }
+}
+
+export class EventNotFountError extends Error {
+  constructor () {
+    super('Event not found')
   }
 }
 
