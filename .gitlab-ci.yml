@@ -8,6 +8,10 @@ stages:
   - test
   - publish
 
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'master'
+
 build:
   stage: build
   artifacts:
