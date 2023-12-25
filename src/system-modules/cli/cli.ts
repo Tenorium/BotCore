@@ -3,7 +3,7 @@ import AbstractModule from '../../core/abstractModule.js'
 import { Logger } from '@tenorium/utilslib'
 import { run } from './defaultCommands.js'
 import splitargs from 'splitargs'
-import { CommandCompleter } from '../../util/commandCompleter'
+import { CommandCompleter } from '../../util/commandCompleter.js'
 
 let rl: readline.Interface
 let isClosed = false

@@ -28,14 +28,14 @@
         "jest/no-focused-tests": "error",
         "jest/no-identical-title": "error",
         "jest/prefer-to-have-length": "warn",
-        "jest/valid-expect": "error",
-        "rules": {
-          "import/extensions": ["error", "always", {
-            "js": "always",
-            "ts": "never"
-          }]
-        }
+        "jest/valid-expect": "error"
       }
     }
-  ]
+  ],
+  "rules": {
+    "import/extensions": ["error", "always", {
+      "js": "always",
+      "ts": "never"
+    }]
+  }
 }
