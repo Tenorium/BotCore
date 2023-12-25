@@ -1,6 +1,6 @@
 import CliModule from '../cli.js'
 import splitargs from 'splitargs'
-import { Command, CommandArgument } from '../../../util/сommandCompleter.js'
+import { Command, CommandArgument } from '../../../util/commandCompleter'
 
 export const addCommandManagerCommand = (cli: CliModule): void => {
   cli.addCommand('command',
