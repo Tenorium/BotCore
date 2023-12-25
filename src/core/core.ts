@@ -43,6 +43,13 @@ export default class Core {
       Logger.error('Unexpected error in Client', e)
     }
 
+    if (this.#client !== undefined && this.#config !== undefined) {
+      void this.#client.login(this.#config.getToken()).catch(
+        (reason: Error | null | undefined) => {
+          Logger.error('Unexpected error in Client', reason)
+        })
+    }
+
     ServiceLocator.register('CommandManager', new CommandManager())
 
     void ModuleManager.autoload().then(() => {
@@ -55,11 +62,6 @@ export default class Core {
         Logger.fatal('Config is undefined')
         throw new Error('Config is undefined')
       }
-
-      void this.#client.login(this.#config.getToken()).catch(
-        reason => {
-          Logger.error('Unexpected error in Client', reason)
-        })
     }).catch(
       (reason: Error | null | undefined) => {
         Logger.error('Unexpected error in ModuleManager at autoload', reason)
