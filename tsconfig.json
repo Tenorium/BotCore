@@ -1,20 +1,19 @@
 {
   "compilerOptions": {
-    "target": "es2022",
-    "module": "es2022",
-    "lib": ["es2022"],
-    "allowJs": false,
-    "outDir": "build",
-    "rootDir": "src",
-    "strict": true,
-    "noImplicitAny": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": false,
-    "moduleResolution": "Node",
+    "target": "esnext",
+    "module": "NodeNext",
     "declaration": true,
-    "newLine": "crlf"
-  },
-  "include": [
-    "src/**/*"
-  ]
+    "outDir": "./build",
+    "rootDir": "./src",
+    "strict": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "moduleResolution": "nodenext",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
 }
