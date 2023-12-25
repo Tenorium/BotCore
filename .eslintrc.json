@@ -37,5 +37,8 @@
       "js": "always",
       "ts": "never"
     }]
+  },
+  "globals": {
+    "app": "readonly"
   }
 }
