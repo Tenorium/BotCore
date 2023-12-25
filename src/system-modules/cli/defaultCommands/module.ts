@@ -17,7 +17,7 @@ export const addModuleManagerCommand = (cli: CliModule): void => {
           return false
         }
 
-        if (!ModuleManager.list().includes(moduleName)) {
+        if (!ModuleManager.listModules().includes(moduleName)) {
           console.log('Command don\'t exists!')
           return false
         }
@@ -31,7 +31,7 @@ export const addModuleManagerCommand = (cli: CliModule): void => {
             return
           }
 
-          console.log(ModuleManager.list())
+          console.log(ModuleManager.listModules())
           return
         case 'unload':
           if (!checkModule()) {
@@ -81,7 +81,7 @@ export const addModuleManagerCommand = (cli: CliModule): void => {
           return []
         }
 
-        return moduleManager.list()
+        return moduleManager.listModules()
       })
 
       baseCommand.addArgument(subCommand)

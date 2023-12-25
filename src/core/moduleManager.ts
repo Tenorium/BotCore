@@ -1,22 +1,11 @@
 import { join } from 'path'
 import { existsSync } from 'fs'
 import AbstractModule from './abstractModule.js'
-import {
-  arrayIncludesAll,
-  classLogger,
-  DataObject,
-  EventEmitterWrapper,
-  EventsList,
-  getDirectories,
-  uniqueArray
-} from '@tenorium/utilslib'
+import { classLogger, DataObject, EventEmitterWrapper, EventsList, getDirectories } from '@tenorium/utilslib'
 import { fileURLToPath, pathToFileURL } from 'url'
 
 const USER_MODULES_DIR = fileURLToPath(new URL('../../modules', import.meta.url))
 const SYSTEM_MODULES_DIR = fileURLToPath(new URL('../system-modules', import.meta.url))
-
-const DEFAULT_DISABLED_MODULES: string[] = ['test']
-const PROTECTED_MODULES: string[] = ['cli']
 
 let constructed = false
 
@@ -36,7 +25,7 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
 
   async autoload (): Promise<void> {
     const ConfigManager = app('ConfigManager')
-    const modules = this.list()
+    const modules = this.listModules()
     let disabledModules: string[] = []
 
     const config = new ModuleManagerConfig(
@@ -114,7 +103,7 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
   }
 
   unload (name: string): boolean {
-    if (!this.list().includes(name)) {
+    if (!this.listModules().includes(name)) {
       return true
     }
 
@@ -127,16 +116,19 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
     return true
   }
 
-  list (): string[] {
-    const systemFolders = getDirectories(SYSTEM_MODULES_DIR)
-    systemFolders.filter(value => existsSync(join(SYSTEM_MODULES_DIR, `${value}/${value}.js`)))
-    const folders = getDirectories(USER_MODULES_DIR)
-    folders.filter(value => existsSync(join(USER_MODULES_DIR, `${value}/${value}.js`)))
+  listModules (): string[] {
+    const systemDirectories = this.listModuleDirectories('system')
 
-    return systemFolders.concat(folders)
+    return systemDirectories.concat(this.listModuleDirectories('user'))
   }
 
-  listLoaded (): string[] {
+  listModuleDirectories (type: 'user' | 'system'): string[] {
+    const MODULES_DIR = type === 'user' ? USER_MODULES_DIR : SYSTEM_MODULES_DIR
+    const systemFolders = getDirectories(MODULES_DIR)
+    return systemFolders.filter(value => existsSync(join(MODULES_DIR, `${value}/${value}.js`)))
+  }
+
+  listLoadedModules (): string[] {
     return Object.keys(this.#modules)
   }
 
@@ -147,23 +139,19 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
 
   unloadAll (): void {
     ModuleManager._info('Unloading all modules')
-    const userModules = this.listLoaded().filter(value => !PROTECTED_MODULES.includes(value))
+    const userModules = this.listLoadedModules()
     userModules.forEach((name) => {
       ModuleManager._debug(`Unloading module ${name}`)
       this.unload(name)
     })
 
-    this.listLoaded().forEach((name) => {
+    this.listLoadedModules().forEach((name) => {
       ModuleManager._debug(`Unloading module ${name}`)
       this.unload(name)
     })
   }
 
   disable (name: string): void {
-    if (PROTECTED_MODULES.includes(name)) {
-      throw new Error(`Module ${name} is protected and can't be disabled`)
-    }
-
     const ConfigManager = app('ConfigManager')
 
     /** @type {ModuleManagerConfig|null} */
@@ -228,20 +216,12 @@ classLogger(ModuleManager)
 export default ModuleManager
 
 class ModuleManagerConfig extends DataObject {
-  constructor (data: { disabledModules: string[] } = { disabledModules: DEFAULT_DISABLED_MODULES }) {
+  constructor (data: { disabledModules: string[] } = { disabledModules: [] }) {
     super(data)
   }
 
   getDisabledModules (): string[] {
-    let data: string[] = this.getField('disabledModules')
-
-    if (!arrayIncludesAll(DEFAULT_DISABLED_MODULES, data)) {
-      data = uniqueArray([
-        ...DEFAULT_DISABLED_MODULES, ...data
-      ])
-    }
-
-    return data
+    return this.getField('disabledModules') ?? []
   }
 
   disableModule (name: string): void {

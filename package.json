@@ -6,7 +6,8 @@
   "type": "module",
   "types": "build/init.d.ts",
   "scripts": {
-    "bot": "node build/init.d/init.checkRequirements.js && node build/init.js"
+    "bot": "node build/init.d/init.checkRequirements.js && node build/init.js",
+    "test": "node build/init.d/init.checkRequirements.js && node build/init.js --test"
   },
   "engines": {
     "node": ">=18.10.0"
@@ -15,7 +16,7 @@
   "author": "HACKERPRO17",
   "license": "ISC",
   "dependencies": {
-    "@tenorium/utilslib": "^1.0.1",
+    "@tenorium/utilslib": "^1.0.2",
     "adm-zip": "^0.5.9",
     "axios": "^1.1.3",
     "colors": "^1.4.0",
