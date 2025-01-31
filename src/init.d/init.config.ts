@@ -3,7 +3,7 @@ import { DataObject, LoggerConfig } from '@tenorium/utilslib'
 import { ClientOptions } from 'discord.js'
 
 export default async function (): Promise<CoreConfig> {
-  const configManager = app('ConfigManager')
+  const configManager = app('ConfigManager');
 
   const configData = configManager.readConfig('core')?.getData() as CoreConfigDataType ?? undefined
 

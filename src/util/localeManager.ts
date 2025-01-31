@@ -2,7 +2,7 @@ import { I18n } from 'i18n'
 import { readdirSync, unlinkSync, rmdirSync } from 'fs'
 import { join } from 'path'
 
-const localesPath = join(basePath, '../locales/')
+const localesPath = join(basePath, 'locales/')
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export default class LocaleManager {

@@ -3,7 +3,7 @@
     "target": "esnext",
     "module": "NodeNext",
     "declaration": true,
-    "outDir": "./build",
+    "outDir": "./build/tsc",
     "rootDir": "./src",
     "strict": true,
     "strictNullChecks": true,

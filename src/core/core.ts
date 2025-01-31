@@ -1,9 +1,11 @@
 import { Awaitable, Client, ClientEvents, ClientOptions } from 'discord.js'
-import { v4 as uuidv4 } from 'uuid'
+import * as uuid from 'uuid'
 import { Logger } from '@tenorium/utilslib'
 import wtfnode from 'wtfnode'
 import { CoreConfig } from '../init.d/init.config.js'
 import CommandManager from './commandManager.js'
+
+const uuidv4 = uuid.v4;
 
 declare type EventHandlerInternalType = (...args: any) => Awaitable<void>
 

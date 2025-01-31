@@ -1,5 +1,5 @@
 import readline from 'readline'
-import AbstractModule from '../../core/abstractModule.js'
+import AbstractModule from '../../core/module-system/abstractModule.js'
 import { Logger } from '@tenorium/utilslib'
 import { run } from './defaultCommands.js'
 import splitargs from 'splitargs'
@@ -26,7 +26,7 @@ const commandHandler = function (input: string): void {
 }
 
 export default class CliModule extends AbstractModule {
-  #completer: CommandCompleter = new CommandCompleter()
+  readonly #completer: CommandCompleter = new CommandCompleter()
   load (): void {
     const ModuleManager = app('ModuleManager')
 

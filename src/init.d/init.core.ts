@@ -1,6 +1,6 @@
 import Core from '../core/core.js'
-import { CoreConfig } from './init.config.js'
-import ModuleManager from '../core/moduleManager.js'
+import { type CoreConfig } from './init.config.js'
+import ModuleManager from '../core/module-system/moduleManager.js'
 
 export default async function (config: CoreConfig): Promise<void> {
   console.log('Initializing Core...')

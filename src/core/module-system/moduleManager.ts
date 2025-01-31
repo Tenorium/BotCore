@@ -1,16 +1,24 @@
 import { join } from 'path'
 import { existsSync } from 'fs'
-import AbstractModule from './abstractModule.js'
-import { classLogger, DataObject, EventEmitterWrapper, EventsList, getDirectories } from '@tenorium/utilslib'
-import { fileURLToPath, pathToFileURL } from 'url'
+import type AbstractModule from './abstractModule.js'
+import { classLogger, DataObject, EventEmitterWrapper, type EventsList, getDirectories } from '@tenorium/utilslib'
+import ModuleLoader, { USER_MODULES_DIR } from './moduleLoader.js'
+import CliModule from '../../system-modules/cli/cli.js'
+import HelpModule from '../../system-modules/help/help.js'
 
-const USER_MODULES_DIR = fileURLToPath(new URL('../../modules', import.meta.url))
-const SYSTEM_MODULES_DIR = fileURLToPath(new URL('../system-modules', import.meta.url))
+const SYSTEM_MODULES: Record<string, AbstractModule> = {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
+  cli: CliModule,
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
+  help: HelpModule
+}
 
 let constructed = false
 
 class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
-  #modules: Record<keyof AppModules | string, { path: string, module: AppModules[keyof AppModules | string] | AbstractModule }> = {}
+  #modules: Record<keyof AppModules | string, AppModules[keyof AppModules | string] | AbstractModule> = {}
   static _className = 'ModuleManager'
 
   constructor (options?: EventEmitterOptions) {
@@ -29,6 +37,7 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
     let disabledModules: string[] = []
 
     const config = new ModuleManagerConfig(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       (ConfigManager.readConfig('core', 'moduleManager')?.getData() ?? undefined)
     )
@@ -41,6 +50,13 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
         ModuleManager._debug(`Module ${module_} is disabled, skipping.`)
         continue
       }
+
+      if (Object.hasOwn(SYSTEM_MODULES, module_)) {
+        ModuleManager._debug(`Loading system module ${module_}`)
+        await this.loadSystemModule(module_)
+        continue
+      }
+
       ModuleManager._debug(`Loading module ${module_}`)
       await this.load(module_)
     }
@@ -52,80 +68,39 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
      *
      * @param {string} name
      */
-  async load (name: string): Promise<boolean> {
+  async load (name: string): Promise<void> {
     if (Object.keys(this.#modules).includes(name)) {
-      return true
+      return
     }
 
-    let path = this.#getModulePath(name)
-
-    if (path !== null && process.platform === 'win32') {
-      path = pathToFileURL(path).toString()
-    }
-
-    if (path === null) {
-      ModuleManager._debug(`Path for module ${name} is unknown`)
-      return false
-    }
-    ModuleManager._debug(`Path for module ${name} is ${path}`)
-
-    try {
-      // TODO: Заменить на загрузку JSAR
-
-      const module_ = (await import(path)).default
-      if (module_ === undefined) {
-        ModuleManager._error('Error at loading module', new Error(`Module ${name} not have a default class`))
-      }
-
-      if (!(module_.prototype instanceof AbstractModule)) {
-        ModuleManager._error('Error at loading module', new Error(`Module ${name} not extends AbstractModule class`))
-      }
-
-      /** @type {AbstractModule} */
-      // eslint-disable-next-line new-cap
-      const moduleclass = new module_()
-
-      moduleclass.load()
-      this.#modules[name] = {
-        path,
-        module: moduleclass
-      }
-
+    await ModuleLoader.load(name, moduleInstance => {
+      this.#modules[name] = moduleInstance
       this.emit('moduleLoaded', name)
-
-      return true
-    } catch (e) {
-      // @ts-expect-error
-      ModuleManager._error(`Error at loading module ${name}`, e)
-    }
-
-    return false
+    })
   }
 
-  unload (name: string): boolean {
+  async loadSystemModule (name: string): Promise<void> {
+    const moduleInstance: AbstractModule = SYSTEM_MODULES[name]
+
+    moduleInstance.load()
+    this.#modules[name] = moduleInstance
+  }
+
+  unload (name: string): void {
     if (!this.listModules().includes(name)) {
-      return true
+      return
     }
 
-    const module = this.#modules[name]
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    delete this.#modules[name]
+    ModuleLoader.unload(name)
 
-    module.module.unload()
     this.emit('moduleUnloaded', name)
-    return true
   }
 
   listModules (): string[] {
-    const systemDirectories = this.listModuleDirectories('system')
+    const moduleFolders = getDirectories(USER_MODULES_DIR)
+      .filter(value => existsSync(join(USER_MODULES_DIR, `${value}/${value}.js`)))
 
-    return systemDirectories.concat(this.listModuleDirectories('user'))
-  }
-
-  listModuleDirectories (type: 'user' | 'system'): string[] {
-    const MODULES_DIR = type === 'user' ? USER_MODULES_DIR : SYSTEM_MODULES_DIR
-    const systemFolders = getDirectories(MODULES_DIR)
-    return systemFolders.filter(value => existsSync(join(MODULES_DIR, `${value}/${value}.js`)))
+    return moduleFolders.concat(Object.keys(SYSTEM_MODULES))
   }
 
   listLoadedModules (): string[] {
@@ -156,6 +131,7 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
 
     /** @type {ModuleManagerConfig|null} */
     let config = new ModuleManagerConfig(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       (ConfigManager.readConfig('core', 'moduleManager')?.getData() ?? undefined)
     )
@@ -175,6 +151,7 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
 
     /** @type {ModuleManagerConfig|null} */
     let config = new ModuleManagerConfig(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       (ConfigManager.readConfig('core', 'moduleManager')?.getData() ?? undefined)
     )
@@ -187,21 +164,6 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
       config.enableModule(name)
       ConfigManager.writeConfig('core', config, 'moduleManager')
     }
-  }
-
-  #getModulePath (name: string): string | null {
-    const systemPath = join(SYSTEM_MODULES_DIR, `${name}/${name}.js`)
-    const userPath = join(USER_MODULES_DIR, `${name}/${name}.js`)
-
-    if (existsSync(systemPath)) {
-      return systemPath
-    }
-
-    if (existsSync(userPath)) {
-      return userPath
-    }
-
-    return null
   }
 
   static _warning: ((message: string) => void)

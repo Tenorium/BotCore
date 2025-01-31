@@ -1,5 +1,5 @@
-import { Message, MessageEmbed, MessageReaction, User } from 'discord.js'
-import AbstractModule from '../../core/abstractModule.js'
+import { type Message, MessageEmbed, type MessageReaction, type User } from 'discord.js'
+import AbstractModule from '../../core/module-system/abstractModule.js'
 import LocaleManager from '../../util/localeManager.js'
 const i18n = LocaleManager.getI18n('help')
 
