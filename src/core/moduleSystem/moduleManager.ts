@@ -4,6 +4,7 @@ import type AbstractModule from './abstractModule.js'
 import { classLogger, DataObject, EventEmitterWrapper, type EventsList, getDirectories } from '@tenorium/utilslib'
 import ModuleLoader, { USER_MODULES_DIR } from './moduleLoader.js'
 import CliModule from '../../system-modules/cli/cli.js'
+import { ModuleManagerConfigMapper } from '../../util/datamappers/moduleManagerConfigMapper.js'
 
 const SYSTEM_MODULES: Record<string, typeof AbstractModule> = {
   cli: CliModule
@@ -26,18 +27,10 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
   }
 
   async autoload (): Promise<void> {
-    const ConfigManager = app('ConfigManager')
     const modules = this.listModules()
-    let disabledModules: string[] = []
 
-    const config = new ModuleManagerConfig(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      (ConfigManager.readConfig('core', 'moduleManager')?.getData() ?? undefined)
-    )
-    if (config !== null) {
-      disabledModules = config.getDisabledModules()
-    }
+    const config = this.#getConfig()
+    const disabledModules = config.getDisabledModules()
 
     for (const module_ of modules) {
       if (disabledModules.includes(module_)) {
@@ -156,6 +149,17 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
     }
   }
 
+  #getConfig (): ModuleManagerConfig {
+    const ConfigManager = app('ConfigManager')
+    const config = ConfigManager.readConfig('core', 'moduleManager')
+
+    if (config === null) {
+      return new ModuleManagerConfig()
+    }
+
+    return ModuleManagerConfigMapper.fromDataObject(config)
+  }
+
   static _warning: ((message: string) => void)
   static _error: (message: string, e: Error | null) => void
   static _fatal: (message: string, e: Error | null) => void
@@ -169,7 +173,7 @@ export default ModuleManager
 
 export const SystemModules = SYSTEM_MODULES
 
-class ModuleManagerConfig extends DataObject {
+export class ModuleManagerConfig extends DataObject {
   constructor (data: { disabledModules: string[] } = { disabledModules: [] }) {
     super(data)
   }

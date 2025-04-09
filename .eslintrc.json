@@ -13,7 +13,8 @@
     "import/extensions": ["error", "always", {
       "js": "always",
       "ts": "never"
-    }]
+    }],
+    "@typescript-eslint/no-extraneous-class": "off"
   },
   "globals": {
     "app": "readonly"
