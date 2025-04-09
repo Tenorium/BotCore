@@ -2,13 +2,8 @@ import { Awaitable, Client, ClientEvents, ClientOptions } from 'discord.js'
 import * as uuid from 'uuid'
 import { Logger } from '@tenorium/utilslib'
 import wtfnode from 'wtfnode'
-import { CoreConfig } from '../init.d/init.config.js'
-import CommandManager from './commandManager.js'
-
-const uuidv4 = uuid.v4;
-
-declare type EventHandlerInternalType = (...args: any) => Awaitable<void>
-
+import ConfigManager from '../util/configManager.js'
+import LoggerConfigMapper from '../util/datamappers/loggerConfigMapper.js'
 export default class Core {
   #events: Record<string, { name: string, handler: EventHandlerInternalType }> = {}
   readonly #config: CoreConfig | undefined
@@ -16,13 +11,16 @@ export default class Core {
   #client: import('discord.js').Client | undefined
   static #initialized: boolean = false
 
-  constructor (config: CoreConfig) {
+  constructor () {
     if (app('ServiceLocator').has('Core')) {
       throw new ConstructorUsedError()
     }
 
-    this.#config = config
-    Logger.setConfig(this.#config?.getLoggerConfig())
+    const logsConfig = ConfigManager.readConfig('logs')
+
+    if (logsConfig != null) {
+      Logger.setConfig(LoggerConfigMapper.fromDataObject(logsConfig))
+    }
   }
 
   /**
