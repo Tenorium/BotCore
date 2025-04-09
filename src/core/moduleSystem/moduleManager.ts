@@ -4,15 +4,9 @@ import type AbstractModule from './abstractModule.js'
 import { classLogger, DataObject, EventEmitterWrapper, type EventsList, getDirectories } from '@tenorium/utilslib'
 import ModuleLoader, { USER_MODULES_DIR } from './moduleLoader.js'
 import CliModule from '../../system-modules/cli/cli.js'
-import HelpModule from '../../system-modules/help/help.js'
 
-const SYSTEM_MODULES: Record<string, AbstractModule> = {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  cli: CliModule,
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  help: HelpModule
+const SYSTEM_MODULES: Record<string, typeof AbstractModule> = {
+  cli: CliModule
 }
 
 let constructed = false
@@ -53,7 +47,10 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
 
       if (Object.hasOwn(SYSTEM_MODULES, module_)) {
         ModuleManager._debug(`Loading system module ${module_}`)
-        await this.loadSystemModule(module_)
+        ModuleLoader.loadSystemModule(module_, moduleInstance => {
+          this.#modules[module_] = moduleInstance
+          this.emit('moduleLoaded', module_)
+        })
         continue
       }
 
@@ -77,13 +74,6 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
       this.#modules[name] = moduleInstance
       this.emit('moduleLoaded', name)
     })
-  }
-
-  async loadSystemModule (name: string): Promise<void> {
-    const moduleInstance: AbstractModule = SYSTEM_MODULES[name]
-
-    moduleInstance.load()
-    this.#modules[name] = moduleInstance
   }
 
   unload (name: string): void {
@@ -176,6 +166,8 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
 classLogger(ModuleManager)
 
 export default ModuleManager
+
+export const SystemModules = SYSTEM_MODULES
 
 class ModuleManagerConfig extends DataObject {
   constructor (data: { disabledModules: string[] } = { disabledModules: [] }) {

@@ -3,6 +3,7 @@ import { existsSync } from 'fs'
 import { pathToFileURL } from 'url'
 import AbstractModule from './abstractModule.js'
 import { Logger } from '@tenorium/utilslib'
+import { SystemModules } from './moduleManager.js'
 
 export const USER_MODULES_DIR = join(basePath, 'modules')
 
@@ -42,6 +43,15 @@ export default class ModuleLoader {
       // @ts-expect-error
       Logger.error(`Error at loading module ${name}`, e)
     }
+  }
+
+  static loadSystemModule (name: string, saveCallback: (moduleInstance: AbstractModule) => void): void {
+    if (!Object.keys(SystemModules).includes(name)) {
+      return
+    }
+    const moduleInstance = new SystemModules[name]()
+    moduleInstance.load()
+    saveCallback(moduleInstance)
   }
 
   static unload (name: string): void {
