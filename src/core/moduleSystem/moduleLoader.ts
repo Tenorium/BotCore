@@ -39,9 +39,11 @@ export default class ModuleLoader {
       moduleclass.load()
       saveCallback(moduleclass)
     } catch (e) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      Logger.error(`Error at loading module ${name}`, e)
+      if (e instanceof Error) {
+        Logger.error(`Error at loading module ${name}`, e)
+      }
+
+      Logger.error(`Error at loading module ${name}`)
     }
   }
 
