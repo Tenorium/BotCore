@@ -106,8 +106,11 @@ export default class Core {
     try {
       ModuleManager.unloadAll()
     } catch (e) {
-      // @ts-expect-error
-      Logger.error('Error in ModuleManager at unloadAll', e)
+      if (e instanceof Error) {
+        Logger.error('Error in ModuleManager at unloadAll', e)
+      }
+
+      Logger.error('Error in ModuleManager at unloadAll')
     }
   }
 
@@ -181,13 +184,6 @@ export class CoreAlreadyInitializedError extends Error {
     super('Core already initialized!')
   }
 }
-
-export class EventNotFountError extends Error {
-  constructor () {
-    super('Event not found')
-  }
-}
-
 // DECLARATIONS
 
 declare global {
