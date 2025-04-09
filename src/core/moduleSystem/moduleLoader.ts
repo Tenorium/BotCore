@@ -7,7 +7,6 @@ import { SystemModules } from './moduleManager.js'
 
 export const USER_MODULES_DIR = join(basePath, 'modules')
 
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export default class ModuleLoader {
   static async load (name: string, saveCallback: (moduleInstance: AbstractModule) => void): Promise<void> {
     let path = this.#getModulePath(name)
@@ -24,17 +23,16 @@ export default class ModuleLoader {
     Logger.debug(`Path for module ${name} is ${path}`)
 
     try {
-      const module_: AbstractModule | any = (await import(path)).default
-      if (module_ === undefined) {
+      const Module_: AbstractModule | any = (await import(path)).default
+      if (Module_ === undefined) {
         Logger.error('Error at loading module', new Error(`Module ${name} not have a default class`))
       }
 
-      if (!(module_.prototype instanceof AbstractModule)) {
+      if (!(Module_.prototype instanceof AbstractModule)) {
         Logger.error('Error at loading module', new Error(`Module ${name} not extends AbstractModule class`))
       }
 
-      // eslint-disable-next-line new-cap
-      const moduleclass: AbstractModule = new module_()
+      const moduleclass: AbstractModule = new Module_()
 
       moduleclass.load()
       saveCallback(moduleclass)
