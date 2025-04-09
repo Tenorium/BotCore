@@ -8,7 +8,6 @@ if (!fs.existsSync(dataPath)) {
   fs.mkdirSync(dataPath)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export default class ConfigManager {
   static readConfig (namespace: string, name: string | undefined = undefined): DataObject | null {
     const configPath = path.join(dataPath, `${namespace}/${name === undefined ? 'config.json' : `${name}.json`}`)

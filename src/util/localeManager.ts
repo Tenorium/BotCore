@@ -4,7 +4,6 @@ import { join } from 'path'
 
 const localesPath = join(basePath, 'locales/')
 
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export default class LocaleManager {
   static getI18n (packageName: string): I18n {
     const i18n = new I18n({

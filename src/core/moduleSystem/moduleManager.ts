@@ -134,6 +134,10 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
     }
   }
 
+  getDisabledModules (): string[] {
+    return this.#getConfig().getDisabledModules()
+  }
+
   #getConfig (): ModuleManagerConfig {
     const ConfigManager = app('ConfigManager')
     const config = ConfigManager.readConfig('core', 'moduleManager')

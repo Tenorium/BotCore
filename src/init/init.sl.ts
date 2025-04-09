@@ -1,6 +1,5 @@
 import ConfigManager from '../util/configManager.js'
 
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class ServiceLocator {
   static services: Record<string, any> = {}
   static register (name: string, service: any): void {
