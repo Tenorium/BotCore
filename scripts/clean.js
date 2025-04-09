@@ -1,7 +1,10 @@
-import fs from "fs";
-import {Logger} from "@tenorium/utilslib";
+import fs from 'fs'
+import { Logger } from '@tenorium/utilslib'
 
+if (!fs.existsSync('build')) {
+  Logger.info('No build files found!')
+}
 
-fs.rmdirSync("build");
+fs.rmdirSync('build')
 
-Logger.info("Build files cleared!");
+Logger.info('Build files cleared!')
