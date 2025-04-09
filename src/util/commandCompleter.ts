@@ -63,11 +63,6 @@ export class CommandCompleter {
     this.#commands[command.name] = command
   }
 
-  removeCommand (commandName: string): void {
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    delete this.#commands[commandName]
-  }
-
   getCommand (commandName: string): Command | undefined {
     return this.#commands[commandName]
   }

@@ -67,17 +67,14 @@ export default class CliModule extends AbstractModule {
       try {
         completerCallback(this.#completer)
       } catch (e) {
-        // @ts-expect-error
-        Logger.error('Error in CLI add command function', e)
+        if (e instanceof Error) {
+          Logger.error('Error in CLI add command function', e)
+        } else {
+          Logger.error('Error in CLI add command function')
+        }
       }
     }
     commands[command] = commandHandler
-  }
-
-  removeCommand (command: string): void {
-    this.getCompleter().removeCommand(command)
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    delete commands[command]
   }
 
   getCompleter (): CommandCompleter {
