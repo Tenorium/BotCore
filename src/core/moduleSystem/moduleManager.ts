@@ -13,7 +13,7 @@ const SYSTEM_MODULES: Record<string, typeof AbstractModule> = {
 let constructed = false
 
 class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
-  #modules: Record<keyof AppModules | string, AppModules[keyof AppModules | string] | AbstractModule> = {}
+  #modules: Record<keyof AppModules | string, AppModules[keyof AppModules] | AbstractModule> = {}
   static _className = 'ModuleManager'
 
   constructor (options?: EventEmitterOptions) {
@@ -54,10 +54,6 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
     this.emit('autoLoadFinished')
   }
 
-  /**
-     *
-     * @param {string} name
-     */
   async load (name: string): Promise<void> {
     if (Object.keys(this.#modules).includes(name)) {
       return
@@ -90,9 +86,8 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
     return Object.keys(this.#modules)
   }
 
-  getModule<T extends keyof AppModules | string> (name: T): (T extends keyof AppModules ? AppModules[T] : AbstractModule) | null {
-    // @ts-expect-error Don't know how to fix this
-    return this.#modules[name]?.module ?? null
+  getModule<T extends keyof AppModules | string>(name: T): (T extends keyof AppModules ? AppModules[T] : AbstractModule) | null {
+    return (this.#modules[name] ?? null) as (T extends keyof AppModules ? AppModules[T] : AbstractModule) | null
   }
 
   unloadAll (): void {
@@ -112,12 +107,7 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
   disable (name: string): void {
     const ConfigManager = app('ConfigManager')
 
-    /** @type {ModuleManagerConfig|null} */
-    let config = new ModuleManagerConfig(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      (ConfigManager.readConfig('core', 'moduleManager')?.getData() ?? undefined)
-    )
+    let config = this.#getConfig()
 
     if (config === null) {
       config = new ModuleManagerConfig()
@@ -132,12 +122,7 @@ class ModuleManager extends EventEmitterWrapper<ModuleManagerEvents> {
   enable (name: string): void {
     const ConfigManager = app('ConfigManager')
 
-    /** @type {ModuleManagerConfig|null} */
-    let config = new ModuleManagerConfig(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      (ConfigManager.readConfig('core', 'moduleManager')?.getData() ?? undefined)
-    )
+    let config = this.#getConfig()
 
     if (config === null) {
       config = new ModuleManagerConfig()
@@ -215,8 +200,8 @@ export interface ModuleManagerEvents extends EventsList {
 
 interface EventEmitterOptions {
   /**
-   * Enables automatic capturing of promise rejection.
-   */
+     * Enables automatic capturing of promise rejection.
+     */
   captureRejections?: boolean | undefined
 }
 
