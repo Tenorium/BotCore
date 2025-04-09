@@ -15,15 +15,6 @@ export class ServiceLocator {
     return (Boolean(ServiceLocator.services[name]))
   }
 
-  static remove (name: string): void {
-    if (!ServiceLocator.has(name)) {
-      return
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    delete ServiceLocator.services[name]
-  }
-
   static removeAll (): void {
     ServiceLocator.services = {}
   }
