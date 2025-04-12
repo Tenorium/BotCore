@@ -3,8 +3,8 @@ import { existsSync } from 'fs'
 import type AbstractModule from './abstractModule.js'
 import { classLogger, DataObject, EventEmitterWrapper, type EventsList, getDirectories } from '@tenorium/utilslib'
 import ModuleLoader, { USER_MODULES_DIR } from './moduleLoader.js'
-import CliModule from '../../system-modules/cli/cli.js'
-import { ModuleManagerConfigMapper } from '../../util/datamappers/moduleManagerConfigMapper.js'
+import CliModule from '@system-modules/cli/cli.js'
+import { ModuleManagerConfigMapper } from '@util/datamappers/moduleManagerConfigMapper.js'
 
 const SYSTEM_MODULES: Record<string, typeof AbstractModule> = {
   cli: CliModule

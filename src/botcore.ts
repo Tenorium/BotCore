@@ -3,7 +3,7 @@ import colors from 'colors'
 import fs from 'fs'
 import { format } from 'util'
 import { fileURLToPath } from 'url'
-import { endTimer, startTimer } from './util/time.js'
+import { endTimer, startTimer } from '@util/time.js'
 
 const currentScriptPath = dirname(fileURLToPath(import.meta.url))
 

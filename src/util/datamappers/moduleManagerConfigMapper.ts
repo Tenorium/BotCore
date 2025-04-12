@@ -1,4 +1,4 @@
-import { ModuleManagerConfig } from '../../core/moduleSystem/moduleManager.js'
+import { ModuleManagerConfig } from '@core/moduleSystem/moduleManager.js'
 import { type DataObject } from '@tenorium/utilslib'
 
 export class ModuleManagerConfigMapper {

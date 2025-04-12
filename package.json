@@ -2,12 +2,12 @@
   "name": "botcore",
   "version": "0.1.0-alpha",
   "description": "",
-  "main": "build/init.js",
+  "main": "build/botcore.js",
   "type": "module",
-  "types": "build/init.d.ts",
+  "types": "build/botcore.d.ts",
   "scripts": {
     "build": "node scripts/build.js",
-    "clean": "rm -rf build",
+    "clean": "node scripts/clean.js",
     "start": "node scripts/start.js",
     "profile": "node --prof scripts/start.js"
   },
@@ -47,5 +47,12 @@
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.6.0",
     "typescript": "^5.7.3"
+  },
+  "imports": {
+    "@core": ["./build/core/core.js"],
+    "@core/*": ["./build/core/*"],
+    "@init/*": ["./build/init/*"],
+    "@system-modules/*": ["./build/system-modules/*"],
+    "@util/*": ["./build/util/*"]
   }
 }

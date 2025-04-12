@@ -1,5 +1,5 @@
-import CliModule from '../cli.js'
-import { Command, CommandCompleter } from '../../../util/commandCompleter.js'
+import type CliModule from '../cli.js'
+import { Command, type CommandCompleter } from '@util/commandCompleter.js'
 
 export const addShutdownCommand = (cli: CliModule): void => {
   const handler = function (input: string): void {

@@ -1,4 +1,4 @@
-import ConfigManager from '../util/configManager.js'
+import ConfigManager from '@util/configManager.js'
 
 export class ServiceLocator {
   static services: Record<string, any> = {}

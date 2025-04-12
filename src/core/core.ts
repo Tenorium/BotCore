@@ -1,7 +1,7 @@
 import { Logger } from '@tenorium/utilslib'
 import wtfnode from 'wtfnode'
-import ConfigManager from '../util/configManager.js'
-import LoggerConfigMapper from '../util/datamappers/loggerConfigMapper.js'
+import ConfigManager from '@util/configManager.js'
+import LoggerConfigMapper from '@util/datamappers/loggerConfigMapper.js'
 export default class Core {
   static #initialized: boolean = false
 

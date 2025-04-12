@@ -1,5 +1,5 @@
-import Core from '../core/core.js'
-import ModuleManager from '../core/moduleSystem/moduleManager.js'
+import Core from '@core'
+import ModuleManager from '@core/moduleSystem/moduleManager.js'
 
 export default async function (): Promise<void> {
   console.log('Initializing Core...')

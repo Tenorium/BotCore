@@ -1,9 +1,9 @@
 import readline from 'readline'
-import AbstractModule from '../../core/moduleSystem/abstractModule.js'
+import AbstractModule from '@core/moduleSystem/abstractModule.js'
 import { Logger } from '@tenorium/utilslib'
 import { run } from './defaultCommands.js'
 import splitargs from 'splitargs'
-import { CommandCompleter } from '../../util/commandCompleter.js'
+import { CommandCompleter } from '@util/commandCompleter.js'
 
 let rl: readline.Interface
 let isClosed = false

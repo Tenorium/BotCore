@@ -14,6 +14,13 @@
     "moduleResolution": "nodenext",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@core": ["./src/core/core.js"],
+      "@core/*": ["./src/core/*"],
+      "@init/*": ["./src/init/*"],
+      "@system-modules/*": ["./src/system-modules/*"],
+      "@util/*": ["./src/util/*"],
+    }
   }
 }

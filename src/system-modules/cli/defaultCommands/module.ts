@@ -1,11 +1,12 @@
 import type CliModule from '../cli.js'
-import { Command, CommandArgument } from '../../../util/commandCompleter.js'
+import { Command, CommandArgument } from '@util/commandCompleter.js'
 import splitargs from 'splitargs'
 import { listSubCommand } from './module/list.js'
 import { unloadSubCommand } from './module/unload.js'
 import { loadSubCommand } from './module/load.js'
 import { reloadSubCommand } from './module/reload.js'
 import { disableSubCommand } from './module/disable.js'
+import { enableSubCommand } from '@system-modules/cli/defaultCommands/module/enable.js'
 
 const subcommandsWithModuleNameArg = ['unload', 'load', 'reload', 'disable', 'enable']
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -14,7 +15,8 @@ const subCommandsFunctions: Record<string, Function> = {
   unload: unloadSubCommand,
   load: loadSubCommand,
   reload: reloadSubCommand,
-  disable: disableSubCommand
+  disable: disableSubCommand,
+  enable: enableSubCommand
 }
 
 export const addModuleManagerCommand = (cli: CliModule): void => {
