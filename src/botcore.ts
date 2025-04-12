@@ -4,6 +4,9 @@ import fs from 'fs'
 import { format } from 'util'
 import { fileURLToPath } from 'url'
 import { endTimer, startTimer } from '@util/time.js'
+import type Core from '@core'
+import { type ServiceLocator } from '@init/init.sl.js'
+import AbstractModule from '@core/moduleSystem/abstractModule.js'
 
 const currentScriptPath = dirname(fileURLToPath(import.meta.url))
 
@@ -53,6 +56,12 @@ endTimer('coreModuleImport')
 startTimer()
 await initCore()
 endTimer('initCore')
+
+export {
+  type Core,
+  type ServiceLocator,
+  AbstractModule
+}
 
 // DECLARATION
 

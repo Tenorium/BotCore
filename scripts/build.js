@@ -25,7 +25,6 @@ await esbuild.build({
   external: [
     'readline/promises',
     'colors',
-    'discord.js',
     'wtfnode',
     'i18n'
   ],
