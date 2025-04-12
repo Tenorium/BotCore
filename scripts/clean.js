@@ -3,9 +3,12 @@ import { Logger } from '@tenorium/utilslib'
 
 if (!fs.existsSync('build')) {
   Logger.info('No build files found!')
-  process.exit(0);
+  process.exit(0)
 }
 
-fs.rmdirSync('build')
+fs.rmSync('build', {
+  recursive: true,
+  force: true
+})
 
 Logger.info('Build files cleared!')
