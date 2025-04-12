@@ -1,21 +1,26 @@
 {
-    // Change this to match your project
-    "include": ["**/*"],
-    "compilerOptions": {
-        // Tells TypeScript to read JS files, as
-        // normally they are ignored as source files
-        "allowJs": true,
-        // Generate d.ts files
-        "declaration": true,
-        // This compiler run should
-        // only output d.ts files
-        "emitDeclarationOnly": true,
-        // Types should go into this directory.
-        // Removing this would place the .d.ts files
-        // next to the .js files
-        "outDir": "types",
-        // go to js file when using IDE functions like
-        // "Go to Definition" in VSCode
-        "declarationMap": true
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "NodeNext",
+    "declaration": true,
+    "outDir": "./build/tsc",
+    "rootDir": "./src",
+    "strict": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "moduleResolution": "nodenext",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@core": ["./src/core/core.js"],
+      "@core/*": ["./src/core/*"],
+      "@init/*": ["./src/init/*"],
+      "@system-modules/*": ["./src/system-modules/*"],
+      "@util/*": ["./src/util/*"],
     }
+  }
 }
